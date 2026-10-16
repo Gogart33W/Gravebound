@@ -15,13 +15,12 @@ public partial class DamageNumber : Label3D
         label.Modulate = isCritical ? new Color(1.0f, 0.3f, 0.1f) : new Color(1.0f, 0.85f, 0.25f);
         label.OutlineModulate = new Color(0.1f, 0.1f, 0.1f, 0.9f);
         label.OutlineSize = 6;
+        context.GetTree().Root.AddChild(label);
         label.GlobalPosition = position + new Vector3(
             (float)GD.RandRange(-0.2, 0.2),
             (float)GD.RandRange(0.2, 0.4),
             (float)GD.RandRange(-0.2, 0.2)
         );
-
-        context.GetTree().Root.AddChild(label);
 
         var tween = label.CreateTween();
         Vector3 endPos = label.GlobalPosition + new Vector3(0, 1.2f, 0);

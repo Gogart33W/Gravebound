@@ -15,15 +15,21 @@ public partial class GraveboundHUD : CanvasLayer
     private PanelContainer? _loreModal;
     private Label? _loreTitleLabel;
     private Label? _loreBodyLabel;
+    private Button? _loreCloseButton;
     private Control? _deathScreen;
-    private Label? _interactPrompt;
+    private PanelContainer? _victoryModal;
+    private Button? _victoryContinueButton;
 
-    // Titan Quest Top Target Health Bar
+    // Top Target Health Bar
     private PanelContainer? _targetBarBox;
     private ProgressBar? _targetHealthBar;
     private Label? _targetNameLabel;
     private Label? _targetHpLabel;
     private float _targetBarHideTimer;
+
+    public bool IsModalOpen =>
+        (_loreModal != null && _loreModal.Visible) ||
+        (_victoryModal != null && _victoryModal.Visible);
 
     public override void _EnterTree()
     {
@@ -39,8 +45,10 @@ public partial class GraveboundHUD : CanvasLayer
         _loreModal = GetNodeOrNull<PanelContainer>("Control/Center/LoreModal");
         _loreTitleLabel = GetNodeOrNull<Label>("Control/Center/LoreModal/VBox/Title");
         _loreBodyLabel = GetNodeOrNull<Label>("Control/Center/LoreModal/VBox/Body");
+        _loreCloseButton = GetNodeOrNull<Button>("Control/Center/LoreModal/VBox/CloseButton");
         _deathScreen = GetNodeOrNull<Control>("Control/DeathScreen");
-        _interactPrompt = GetNodeOrNull<Label>("Control/InteractPrompt");
+        _victoryModal = GetNodeOrNull<PanelContainer>("Control/Center/VictoryModal");
+        _victoryContinueButton = GetNodeOrNull<Button>("Control/Center/VictoryModal/VBox/ContinueButton");
 
         _targetBarBox = GetNodeOrNull<PanelContainer>("Control/TopCenter/TargetBarBox");
         _targetHealthBar = GetNodeOrNull<ProgressBar>("Control/TopCenter/TargetBarBox/VBox/TargetHealthBar");
@@ -49,8 +57,24 @@ public partial class GraveboundHUD : CanvasLayer
 
         if (_loreModal != null) _loreModal.Visible = false;
         if (_deathScreen != null) _deathScreen.Visible = false;
-        if (_interactPrompt != null) _interactPrompt.Visible = false;
         if (_targetBarBox != null) _targetBarBox.Visible = false;
+        if (_victoryModal != null) _victoryModal.Visible = false;
+
+        if (_loreCloseButton != null)
+        {
+            _loreCloseButton.Pressed += () =>
+            {
+                if (_loreModal != null) _loreModal.Visible = false;
+            };
+        }
+
+        if (_victoryContinueButton != null)
+        {
+            _victoryContinueButton.Pressed += () =>
+            {
+                if (_victoryModal != null) _victoryModal.Visible = false;
+            };
+        }
 
         var player = PlayerController.Instance ?? GetTree().Root.FindChild("Player", true, false) as PlayerController;
         if (player != null)
@@ -95,37 +119,21 @@ public partial class GraveboundHUD : CanvasLayer
         if (_targetBarBox != null) _targetBarBox.Visible = false;
     }
 
-    public void ShowInteractPrompt(string text)
-    {
-        if (_interactPrompt != null)
-        {
-            _interactPrompt.Text = text;
-            _interactPrompt.Visible = true;
-        }
-    }
-
-    public void HideInteractPrompt()
-    {
-        if (_interactPrompt != null)
-        {
-            _interactPrompt.Visible = false;
-        }
-    }
-
     public override void _Input(InputEvent @event)
     {
         if (@event is InputEventKey key && key.Pressed && !key.Echo)
         {
-            if (key.Keycode == Key.L)
-            {
-                ToggleLoreModal();
-                GetViewport().SetInputAsHandled();
-            }
-            else if (key.Keycode == Key.Escape)
+            if (key.Keycode == Key.L || key.Keycode == Key.Escape)
             {
                 if (_loreModal != null && _loreModal.Visible)
                 {
                     _loreModal.Visible = false;
+                    GetViewport().SetInputAsHandled();
+                    return;
+                }
+                else if (key.Keycode == Key.L)
+                {
+                    ToggleLoreModal();
                     GetViewport().SetInputAsHandled();
                 }
             }
@@ -179,6 +187,14 @@ public partial class GraveboundHUD : CanvasLayer
         if (_loreModal != null)
         {
             _loreModal.Visible = !_loreModal.Visible;
+        }
+    }
+
+    public void ShowVictoryModal()
+    {
+        if (_victoryModal != null)
+        {
+            _victoryModal.Visible = true;
         }
     }
 }

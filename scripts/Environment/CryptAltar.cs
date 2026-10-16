@@ -18,6 +18,7 @@ public partial class CryptAltar : Area3D
     private bool _playerInside = false;
     private bool _hasBeenInspected = false;
     private OmniLight3D? _altarLight;
+    private Label3D? _promptLabel;
 
     [Signal] public delegate void AltarInspectedEventHandler();
 
@@ -29,6 +30,13 @@ public partial class CryptAltar : Area3D
     public override void _Ready()
     {
         _altarLight = GetNodeOrNull<OmniLight3D>("AltarGlow");
+        _promptLabel = GetNodeOrNull<Label3D>("PromptLabel");
+
+        if (_promptLabel != null)
+        {
+            _promptLabel.Visible = false;
+        }
+
         BodyEntered += OnBodyEntered;
         BodyExited += OnBodyExited;
     }
@@ -38,7 +46,7 @@ public partial class CryptAltar : Area3D
         if (body is PlayerController)
         {
             _playerInside = true;
-            GraveboundHUD.Instance?.ShowInteractPrompt("[E] або [L] або Клік: Дослідити Вівтар Мор-Гула");
+            if (_promptLabel != null) _promptLabel.Visible = true;
         }
     }
 
@@ -47,7 +55,7 @@ public partial class CryptAltar : Area3D
         if (body is PlayerController)
         {
             _playerInside = false;
-            GraveboundHUD.Instance?.HideInteractPrompt();
+            if (_promptLabel != null) _promptLabel.Visible = false;
         }
     }
 
@@ -72,12 +80,18 @@ public partial class CryptAltar : Area3D
         _hasBeenInspected = true;
         EmitSignal(SignalName.AltarInspected);
 
-        // Flash rune light
+        if (_promptLabel != null)
+        {
+            _promptLabel.Text = "Вівтар активовано";
+            _promptLabel.Modulate = new Color(0.3f, 1.0f, 0.7f);
+        }
+
+        // Pulse rune lighting
         if (_altarLight != null)
         {
             var tween = CreateTween();
             tween.TweenProperty(_altarLight, "light_energy", 4.5f, 0.3f);
-            tween.TweenProperty(_altarLight, "light_energy", 2.0f, 1.2f);
+            tween.TweenProperty(_altarLight, "light_energy", 2.2f, 1.0f);
         }
     }
 }

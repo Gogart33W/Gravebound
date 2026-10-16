@@ -59,12 +59,15 @@ public partial class GameManager : Node3D
         {
             _hud.UpdateQuest(
                 "Розділ I: Очищення Завершено!",
-                "• Вартові склепу знищені (3 / 3)\n• Таємницю Вівтаря Мор-Гула відкрито\nШлях до нижніх катакомб пробуджено..."
+                "• Вартові склепу знищені (3 / 3)\n• Портал у Катакомби відкрито на півночі арени!"
             );
+
+            // Open the physical portal in the level!
+            CatacombsPortal.Instance?.OpenPortal();
         }
         else
         {
-            string altarStatus = _altarInspected ? "Вівтар Мор-Гула досліджено" : "Дослідіть вівтар у центрі [E / L]";
+            string altarStatus = _altarInspected ? "Вівтар Мор-Гула досліджено" : "Дослідіть вівтар у центрі";
             _hud.UpdateQuest(
                 "Розділ I: Пробудження в Попелі",
                 $"• Знищіть скелетів-вартових: {_skeletonsDefeated} / {TotalSkeletonsGoal}\n• {altarStatus}"

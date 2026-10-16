@@ -77,11 +77,11 @@ public partial class SoundManager : Node
         if (stream == null) return;
         var player = new AudioStreamPlayer3D();
         player.Stream = stream;
-        player.GlobalPosition = position;
         player.VolumeDb = volumeDb;
         player.PitchScale = pitchScale;
         player.MaxDistance = 40f;
         AddChild(player);
+        player.GlobalPosition = position;
         player.Finished += () => player.QueueFree();
         player.Play();
     }

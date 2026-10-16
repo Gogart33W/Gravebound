@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/UI/GraveboundHUD.cs" id="1_hud"]
 
@@ -61,7 +61,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lore"]
-bg_color = Color(0.06, 0.07, 0.08, 0.95)
+bg_color = Color(0.06, 0.07, 0.08, 0.96)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
@@ -75,6 +75,34 @@ content_margin_left = 24.0
 content_margin_top = 20.0
 content_margin_right = 24.0
 content_margin_bottom = 20.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_normal"]
+bg_color = Color(0.15, 0.13, 0.1, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.7, 0.55, 0.25, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_top = 6.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
+bg_color = Color(0.28, 0.22, 0.12, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.9, 0.75, 0.35, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_top = 6.0
+content_margin_bottom = 6.0
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_hud")
@@ -94,9 +122,9 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -200.0
-offset_top = 20.0
+offset_top = 16.0
 offset_right = 200.0
-offset_bottom = 75.0
+offset_bottom = 72.0
 grow_horizontal = 2
 mouse_filter = 2
 
@@ -150,9 +178,9 @@ anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -340.0
-offset_top = 20.0
-offset_right = -20.0
-offset_bottom = 140.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 130.0
 grow_horizontal = 0
 mouse_filter = 2
 
@@ -169,35 +197,15 @@ mouse_filter = 2
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.95, 0.82, 0.45, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 14
 text = "Розділ I: Пробудження в Попелі"
 
 [node name="QuestObjective" type="Label" parent="Control/TopRight/QuestBox/VBox"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 12
 text = "• Знищіть скелетів-вартових: 0 / 3\n• Дослідіть давній вівтар у центрі арени"
-
-[node name="InteractPrompt" type="Label" parent="Control"]
-visible = false
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -250.0
-offset_top = -125.0
-offset_right = 250.0
-offset_bottom = -95.0
-grow_horizontal = 2
-grow_vertical = 0
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.3, 0.95, 0.75, 1)
-theme_override_font_sizes/font_size = 15
-text = "[E] або [L] або Клік: Дослідити Вівтар Мор-Гула"
-horizontal_alignment = 1
 
 [node name="BottomBar" type="VBoxContainer" parent="Control"]
 layout_mode = 1
@@ -207,9 +215,9 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -280.0
-offset_top = -80.0
+offset_top = -84.0
 offset_right = 280.0
-offset_bottom = -16.0
+offset_bottom = -14.0
 grow_horizontal = 2
 grow_vertical = 0
 alignment = 1
@@ -243,7 +251,7 @@ vertical_alignment = 1
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 0.85)
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 11
 text = "[ПКМ / ЛКМ]: Рух та Атака по ворогу | [Коліщатко]: Зум | [F11]: Повний екран | [E / L]: Хроніка"
 horizontal_alignment = 1
 
@@ -258,43 +266,79 @@ mouse_filter = 2
 
 [node name="LoreModal" type="PanelContainer" parent="Control/Center"]
 visible = false
-custom_minimum_size = Vector2(560, 320)
+custom_minimum_size = Vector2(580, 360)
 layout_mode = 2
-mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_lore")
 
 [node name="VBox" type="VBoxContainer" parent="Control/Center/LoreModal"]
 layout_mode = 2
-mouse_filter = 2
+theme_override_constants/separation = 12
 
 [node name="Title" type="Label" parent="Control/Center/LoreModal/VBox"]
 layout_mode = 2
-mouse_filter = 2
 theme_override_colors/font_color = Color(0.95, 0.82, 0.45, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 19
 text = "Хроніка Могилонародженого: Пакт Мор-Гула"
 horizontal_alignment = 1
 
 [node name="HSeparator" type="HSeparator" parent="Control/Center/LoreModal/VBox"]
 layout_mode = 2
-mouse_filter = 2
 
 [node name="Body" type="Label" parent="Control/Center/LoreModal/VBox"]
-custom_minimum_size = Vector2(500, 180)
+custom_minimum_size = Vector2(520, 190)
 layout_mode = 2
-mouse_filter = 2
 theme_override_colors/font_color = Color(0.9, 0.88, 0.82, 1)
 theme_override_font_sizes/font_size = 14
-text = "«Коли небо впало, а перша імперія потонула в чорному попелі, Вартові склали нерозривну клятву крові. Тіла їхні були замуровані в граніт крипти, а душі зв'язані печатками Мор-Гула.\n\nТи — останній Могилонароджений (Gravebound). Пробуджений із праху, коли древня печать тріснула, ти ступаєш цим холодним камінням. Твій меч жадає спокою для тих, чиї кістки були підняті скверною...»"
+text = "«Коли небо впало, а перша імперія потонула в чорному попелі, Вартові склали нерозривну клятву крові. Тіла їхні були замуровані в граніт крипти, а душі зв'язані печатками Мор-Гула.\n\nТи — останній Могилонароджений (Gravebound). Пробуджений із праху, коли древня печать тріснула, ти ступаєш цим холодним камінням. Твій меч жадає спокою для тих, чиї кістки були підняті скверною...\n\nЗнищ вартових та розбуди потаємний прохід у глибини катакомб!»"
 autowrap_mode = 2
 
-[node name="CloseHint" type="Label" parent="Control/Center/LoreModal/VBox"]
+[node name="CloseButton" type="Button" parent="Control/Center/LoreModal/VBox"]
+custom_minimum_size = Vector2(240, 34)
 layout_mode = 2
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
-theme_override_font_sizes/font_size = 12
-text = "[Натисніть 'E', 'L' або Esc для закриття хроніки]"
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.95, 0.85, 0.6, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "ЗАКРИТИ ХРОНІКУ (Esc)"
+
+[node name="VictoryModal" type="PanelContainer" parent="Control/Center"]
+visible = false
+custom_minimum_size = Vector2(540, 260)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_lore")
+
+[node name="VBox" type="VBoxContainer" parent="Control/Center/VictoryModal"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="Control/Center/VictoryModal/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 22
+text = "«ТАЄМНИЦЮ СКЛЕПУ РОЗГАДАНО!»"
 horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Control/Center/VictoryModal/VBox"]
+layout_mode = 2
+
+[node name="Body" type="Label" parent="Control/Center/VictoryModal/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 14
+text = "Вартові склепу знайшли спокій. Древній портал у Катакомби Мор-Гула активовано!\n\nТвоя подорож тільки розпочинається, Могилонароджений..."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ContinueButton" type="Button" parent="Control/Center/VictoryModal/VBox"]
+custom_minimum_size = Vector2(240, 36)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.95, 0.85, 0.6, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "ПРОДОВЖИТИ ДОСЛІДЖЕННЯ"
 
 [node name="DeathScreen" type="CenterContainer" parent="Control"]
 visible = false

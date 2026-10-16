@@ -10,7 +10,7 @@ namespace Gravebound.Player;
 public partial class PlayerController : CharacterBody3D
 {
     [Export] public float MoveSpeed { get; set; } = 6.5f;
-    [Export] public float Acceleration { get; set; } = 24.0f;
+    [Export] public float Acceleration { get; set; } = 28.0f;
     [Export] public float RotationSpeed { get; set; } = 15.0f;
     [Export] public int AttackDamage { get; set; } = 25;
     [Export] public float AttackRange { get; set; } = 2.2f;
@@ -30,6 +30,7 @@ public partial class PlayerController : CharacterBody3D
     private bool _isDead;
     private float _attackCooldown;
     private float _clickMarkerPulse;
+    private float _repathTimer;
     private string _currentAnim = "";
 
     private Vector3 _targetDestination;
@@ -107,6 +108,13 @@ public partial class PlayerController : CharacterBody3D
             return;
         }
 
+        // Ignore gameplay clicks if modal is open
+        if (GraveboundHUD.Instance != null && GraveboundHUD.Instance.IsModalOpen)
+        {
+            _isHoldingMoveButton = false;
+            return;
+        }
+
         if (@event is InputEventMouseButton mb)
         {
             // Both Right Click (Titan Quest style) and Left Click handle movement / targeting
@@ -115,7 +123,7 @@ public partial class PlayerController : CharacterBody3D
                 _isHoldingMoveButton = mb.Pressed;
                 if (mb.Pressed)
                 {
-                    HandleMouseClick();
+                    HandleMouseClick(isDragging: false);
                 }
             }
         }
@@ -145,8 +153,10 @@ public partial class PlayerController : CharacterBody3D
         }
     }
 
-    private void HandleMouseClick()
+    private void HandleMouseClick(bool isDragging)
     {
+        if (GraveboundHUD.Instance != null && GraveboundHUD.Instance.IsModalOpen) return;
+
         var camera = GetViewport().GetCamera3D();
         if (camera == null) return;
 
@@ -155,7 +165,7 @@ public partial class PlayerController : CharacterBody3D
         var rayDir = camera.ProjectRayNormal(mousePos);
 
         var space = GetWorld3D().DirectSpaceState;
-        // Check both environment (layer 1) and enemies (layer 4)
+        // Check environment (1), enemies (4), and altar (1)
         var query = PhysicsRayQueryParameters3D.Create(rayOrigin, rayOrigin + rayDir * 300f);
         query.CollisionMask = 1 | 4;
         query.CollideWithBodies = true;
@@ -167,17 +177,22 @@ public partial class PlayerController : CharacterBody3D
         {
             var collider = result["collider"].As<GodotObject>();
 
-            // 1. Clicked on an Enemy (Titan Quest target-lock!)
+            // 1. Clicked on an Enemy (Titan Quest Target Lock)
             if (collider is SkeletonEnemy enemy && !enemy.IsDead)
             {
                 _targetEnemy = enemy;
                 _targetAltar = null;
                 GraveboundHUD.Instance?.ShowTargetEnemy(enemy.EnemyName, enemy.CurrentHealth, enemy.MaxHealth);
 
-                // If already within attack range, strike immediately!
                 if (GlobalPosition.DistanceTo(enemy.GlobalPosition) <= AttackRange)
                 {
                     PerformAttackOnTarget(enemy);
+                }
+                else
+                {
+                    _targetDestination = enemy.GlobalPosition;
+                    _hasTargetDestination = true;
+                    if (_navAgent != null) _navAgent.TargetPosition = enemy.GlobalPosition;
                 }
                 return;
             }
@@ -187,7 +202,7 @@ public partial class PlayerController : CharacterBody3D
             {
                 _targetAltar = altar;
                 _targetEnemy = null;
-                MoveTo(altar.GlobalPosition);
+                MoveTo(altar.GlobalPosition, showMarker: !isDragging);
                 return;
             }
 
@@ -196,23 +211,23 @@ public partial class PlayerController : CharacterBody3D
             {
                 _targetEnemy = null;
                 _targetAltar = null;
-                MoveTo((Vector3)result["position"]);
+                MoveTo((Vector3)result["position"], showMarker: !isDragging);
                 return;
             }
         }
 
-        // Mathematical plane fallback
+        // Mathematical floor plane fallback
         var floorPlane = new Plane(Vector3.Up, 0.0f);
         var planeHit = floorPlane.IntersectsRay(rayOrigin, rayDir);
         if (planeHit.HasValue)
         {
             _targetEnemy = null;
             _targetAltar = null;
-            MoveTo(planeHit.Value);
+            MoveTo(planeHit.Value, showMarker: !isDragging);
         }
     }
 
-    public void MoveTo(Vector3 worldTarget)
+    public void MoveTo(Vector3 worldTarget, bool showMarker = true)
     {
         if (_isDead) return;
 
@@ -224,7 +239,7 @@ public partial class PlayerController : CharacterBody3D
             _navAgent.TargetPosition = worldTarget;
         }
 
-        if (_clickMarker != null)
+        if (showMarker && _clickMarker != null)
         {
             _clickMarker.GlobalPosition = new Vector3(worldTarget.X, worldTarget.Y + 0.08f, worldTarget.Z);
             _clickMarker.Visible = true;
@@ -312,13 +327,13 @@ public partial class PlayerController : CharacterBody3D
     {
         bool hitAny = false;
 
-        if (primaryTarget != null && !primaryTarget.IsDead && GlobalPosition.DistanceTo(primaryTarget.GlobalPosition) <= AttackRange + 0.5f)
+        if (primaryTarget != null && !primaryTarget.IsDead && GlobalPosition.DistanceTo(primaryTarget.GlobalPosition) <= AttackRange + 0.6f)
         {
             primaryTarget.TakeDamage(AttackDamage);
             hitAny = true;
         }
 
-        // Also cleave other enemies in the 140 degree swing arc
+        // Cleave arc
         Vector3 forward = new Vector3(Mathf.Sin(Rotation.Y), 0, Mathf.Cos(Rotation.Y)).Normalized();
         var enemies = GetTree().GetNodesInGroup("enemies");
 
@@ -352,7 +367,7 @@ public partial class PlayerController : CharacterBody3D
     {
         if (_isDead) return;
 
-        // Hover detection for enemy cursor info
+        // Hover detection for enemy info
         var camera = GetViewport().GetCamera3D();
         if (camera != null)
         {
@@ -361,7 +376,7 @@ public partial class PlayerController : CharacterBody3D
             var rayDir = camera.ProjectRayNormal(mousePos);
             var space = GetWorld3D().DirectSpaceState;
             var query = PhysicsRayQueryParameters3D.Create(rayOrigin, rayOrigin + rayDir * 300f);
-            query.CollisionMask = 4; // Enemy layer only
+            query.CollisionMask = 4;
             query.CollideWithBodies = true;
             var res = space.IntersectRay(query);
 
@@ -390,10 +405,15 @@ public partial class PlayerController : CharacterBody3D
             }
         }
 
-        // Continuous movement tracking while holding mouse button without target enemy
+        // Throttled hold tracking (avoids resetting pathing every 16ms!)
         if (_isHoldingMoveButton && !_isAttacking && _targetEnemy == null)
         {
-            HandleMouseClick();
+            _repathTimer -= dt;
+            if (_repathTimer <= 0f)
+            {
+                _repathTimer = 0.12f;
+                HandleMouseClick(isDragging: true);
+            }
         }
 
         // Decay click marker
@@ -449,9 +469,15 @@ public partial class PlayerController : CharacterBody3D
             }
             else
             {
-                // Move towards target enemy position
+                // Smooth pursuit towards moving enemy
                 _targetDestination = _targetEnemy.GlobalPosition;
                 _hasTargetDestination = true;
+                _repathTimer -= dt;
+                if (_repathTimer <= 0f)
+                {
+                    _repathTimer = 0.15f;
+                    if (_navAgent != null) _navAgent.TargetPosition = _targetEnemy.GlobalPosition;
+                }
             }
         }
 
