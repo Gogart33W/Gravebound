@@ -35,6 +35,8 @@ public partial class CryptAltar : Area3D
         }
     }
 
+    [Export] public float InteractRange { get; set; } = 4.2f;
+
     public override void _Ready()
     {
         _altarLight = GetNodeOrNull<OmniLight3D>("AltarGlow");
@@ -44,32 +46,30 @@ public partial class CryptAltar : Area3D
         {
             _promptLabel.Visible = false;
         }
-
-        BodyEntered += OnBodyEntered;
-        BodyExited += OnBodyExited;
     }
 
-    private void OnBodyEntered(Node3D body)
+    /// <summary>Horizontal distance check: the navmesh stops at the dais edge, below the altar itself.</summary>
+    public bool IsInRange(Node3D who)
     {
-        if (body is PlayerController)
-        {
-            _playerInside = true;
-            if (_promptLabel != null) _promptLabel.Visible = true;
-        }
+        Vector3 d = who.GlobalPosition - GlobalPosition;
+        d.Y = 0f;
+        return d.Length() <= InteractRange;
     }
 
-    private void OnBodyExited(Node3D body)
+    public override void _Process(double delta)
     {
-        if (body is PlayerController)
+        var player = PlayerController.Instance;
+        _playerInside = player != null && !player.IsDead && IsInRange(player);
+        if (_promptLabel != null && _promptLabel.Visible != _playerInside)
         {
-            _playerInside = false;
-            if (_promptLabel != null) _promptLabel.Visible = false;
+            _promptLabel.Visible = _playerInside;
         }
     }
 
     public override void _Input(InputEvent @event)
     {
         if (!_playerInside) return;
+        if (GraveboundHUD.Instance != null && GraveboundHUD.Instance.IsModalOpen) return;
 
         if (@event is InputEventKey key && key.Pressed && !key.Echo)
         {

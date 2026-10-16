@@ -559,7 +559,7 @@ public partial class PlayerController : CharacterBody3D
         // 2. Altar Proximity Check
         if (_targetAltar != null)
         {
-            if (GlobalPosition.DistanceTo(_targetAltar.GlobalPosition) <= 2.8f)
+            if (_targetAltar.IsInRange(this))
             {
                 _targetAltar.Inspect();
                 _targetAltar = null;

@@ -58,8 +58,8 @@ public static class CharacterMotion
         var hit = new KinematicCollision3D();
         if (!body.TestMove(from, motion, hit)) return;
 
-        // Only treat near-vertical surfaces as steps (not slopes or other floors)
-        if (Mathf.Abs(hit.GetNormal().Y) > 0.5f) return;
+        // The capsule's rounded bottom touches a step edge at a tilted normal, so only reject near-flat contacts
+        if (hit.GetNormal().Y > 0.95f) return;
 
         Vector3 up = Vector3.Up * StepHeight;
         if (body.TestMove(from, up)) return; // ceiling in the way
