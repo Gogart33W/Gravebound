@@ -4,6 +4,7 @@ using Gravebound.Audio;
 using Gravebound.Core;
 using Gravebound.Player;
 using Gravebound.UI;
+using Gravebound.Inventory;
 
 namespace Gravebound.Enemies;
 
@@ -332,6 +333,18 @@ public partial class SkeletonEnemy : CharacterBody3D
 
         var col = GetNodeOrNull<CollisionShape3D>("CollisionShape3D");
         if (col != null) col.SetDeferred("disabled", true);
+
+        // Spawn loot drop
+        bool isBoss = MaxHealth > 100;
+        int roll = GD.RandRange(0, 100);
+        if (isBoss || roll < 80)
+        {
+            var itemData = ItemData.CreateRandomDrop(isBoss);
+            var worldItem = new WorldItem3D();
+            worldItem.Position = GlobalPosition;
+            worldItem.Setup(itemData);
+            GetTree().CurrentScene?.CallDeferred("add_child", worldItem);
+        }
 
         EmitSignal(SignalName.EnemyDied, this);
     }

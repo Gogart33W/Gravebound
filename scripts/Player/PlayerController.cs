@@ -5,6 +5,7 @@ using Gravebound.Core;
 using Gravebound.Enemies;
 using Gravebound.Environment;
 using Gravebound.UI;
+using Gravebound.Inventory;
 
 namespace Gravebound.Player;
 
@@ -22,6 +23,10 @@ public partial class PlayerController : CharacterBody3D
     public int MaxHealth { get; set; } = 100;
     public int CurrentHealth { get; set; } = 100;
     public bool IsDead => _isDead;
+
+    public int GetTotalMaxHealth() => MaxHealth + (InventoryManager.Instance?.GetBonusHealth() ?? 0);
+    public int GetTotalAttackDamage() => AttackDamage + (InventoryManager.Instance?.GetBonusDamage() ?? 0);
+    public int GetTotalArmor() => InventoryManager.Instance?.GetBonusArmor() ?? 0;
 
     private NavigationAgent3D? _navAgent;
     private AnimationPlayer? _animPlayer;
@@ -98,6 +103,15 @@ public partial class PlayerController : CharacterBody3D
             }
         }
 
+        if (!InputMap.HasAction("toggle_inventory"))
+        {
+            InputMap.AddAction("toggle_inventory");
+            var keyI = new InputEventKey { Keycode = Key.I, PhysicalKeycode = Key.I };
+            var keyB = new InputEventKey { Keycode = Key.B, PhysicalKeycode = Key.B };
+            InputMap.ActionAddEvent("toggle_inventory", keyI);
+            InputMap.ActionAddEvent("toggle_inventory", keyB);
+        }
+
         Callable.From(ActorSetup).CallDeferred();
         PlayAnimation("Idle");
     }
@@ -124,6 +138,13 @@ public partial class PlayerController : CharacterBody3D
 
     public override void _Input(InputEvent @event)
     {
+        if (@event.IsActionPressed("toggle_inventory"))
+        {
+            GraveboundHUD.Instance?.ToggleInventory();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
         if (_isDead)
         {
             if (_deathTimer <= 0f)
@@ -253,6 +274,14 @@ public partial class PlayerController : CharacterBody3D
                 _targetEnemy = null;
                 var targetPos = new Vector3(portal.GlobalPosition.X, 0f, portal.GlobalPosition.Z);
                 MoveTo(targetPos, showMarker: !isDragging);
+                return;
+            }
+
+            if (collider is WorldItem3D worldItem)
+            {
+                _targetAltar = null;
+                _targetEnemy = null;
+                MoveTo(worldItem.GlobalPosition, showMarker: !isDragging);
                 return;
             }
         }
@@ -393,10 +422,11 @@ public partial class PlayerController : CharacterBody3D
     private void ExecuteMeleeStrike(SkeletonEnemy? primaryTarget)
     {
         bool hitAny = false;
+        int damage = GetTotalAttackDamage();
 
         if (primaryTarget != null && !primaryTarget.IsDead && GlobalPosition.DistanceTo(primaryTarget.GlobalPosition) <= AttackRange + 0.6f)
         {
-            primaryTarget.TakeDamage(AttackDamage);
+            primaryTarget.TakeDamage(damage);
             hitAny = true;
         }
 
@@ -417,7 +447,7 @@ public partial class PlayerController : CharacterBody3D
                     Vector3 enemyDir = toEnemy.Normalized();
                     if (forward.Dot(enemyDir) > 0.1f)
                     {
-                        skeleton.TakeDamage(AttackDamage);
+                        skeleton.TakeDamage(damage);
                         hitAny = true;
                     }
                 }
@@ -658,9 +688,10 @@ public partial class PlayerController : CharacterBody3D
 
         _invulnerabilityTimer = 0.35f;
         _hitStun = 0.25f;
-        CurrentHealth = Mathf.Max(0, CurrentHealth - damage);
+        int mitigated = Mathf.Max(1, damage - GetTotalArmor());
+        CurrentHealth = Mathf.Max(0, CurrentHealth - mitigated);
         SoundManager.Instance?.PlayPlayerHit();
-        EmitSignal(SignalName.HealthChanged, CurrentHealth, MaxHealth);
+        EmitSignal(SignalName.HealthChanged, CurrentHealth, GetTotalMaxHealth());
         PlayAnimation("Hit_A", true);
 
         if (CurrentHealth <= 0)

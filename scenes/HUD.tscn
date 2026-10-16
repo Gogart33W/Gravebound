@@ -247,12 +247,38 @@ text = "100 / 100"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="InventoryButton" type="Button" parent="Control/BottomBar"]
+custom_minimum_size = Vector2(180, 28)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.95, 0.85, 0.45, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🎒 ІНВЕНТАР [I]"
+
 [node name="ControlsHint" type="Label" parent="Control/BottomBar"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 0.85)
 theme_override_font_sizes/font_size = 11
-text = "[ЛКМ / ПКМ]: Рух та Атака | [Пробіл]: Удар | [E]: Вівтар | [Коліщатко]: Зум | [F11]: Повний екран"
+text = "[ЛКМ / ПКМ]: Рух та Атака | [Пробіл]: Удар | [I]: Інвентар | [E]: Вівтар | [Коліщатко]: Зум | [F11]: Повний екран"
+horizontal_alignment = 1
+
+[node name="LootToastLabel" type="Label" parent="Control"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -250.0
+offset_top = 76.0
+offset_right = 250.0
+offset_bottom = 105.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_font_sizes/font_size = 14
+text = "✦ Знайдено: Зачарований Залізний Меч"
 horizontal_alignment = 1
 
 [node name="Center" type="CenterContainer" parent="Control"]
@@ -339,6 +365,150 @@ theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "ПРОДОВЖИТИ ДОСЛІДЖЕННЯ"
+
+[node name="InventoryModal" type="PanelContainer" parent="Control/Center"]
+visible = false
+custom_minimum_size = Vector2(680, 460)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_lore")
+
+[node name="VBox" type="VBoxContainer" parent="Control/Center/InventoryModal"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderHBox" type="HBoxContainer" parent="Control/Center/InventoryModal/VBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Control/Center/InventoryModal/VBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.82, 0.45, 1)
+theme_override_font_sizes/font_size = 18
+text = "⚔️ СПОРЯДЖЕННЯ ТА ІНВЕНТАР"
+
+[node name="GoldLabel" type="Label" parent="Control/Center/InventoryModal/VBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.25, 1)
+theme_override_font_sizes/font_size = 15
+text = "💰 60 Золота"
+
+[node name="HSeparator" type="HSeparator" parent="Control/Center/InventoryModal/VBox"]
+layout_mode = 2
+
+[node name="ContentHBox" type="HBoxContainer" parent="Control/Center/InventoryModal/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="EquipVBox" type="VBoxContainer" parent="Control/Center/InventoryModal/VBox/ContentHBox"]
+custom_minimum_size = Vector2(240, 0)
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="EquipTitle" type="Label" parent="Control/Center/InventoryModal/VBox/ContentHBox/EquipVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.75, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+text = "ЕКІПІРУВАННЯ (Клік зняти):"
+
+[node name="HeadSlot" type="Button" parent="Control/Center/InventoryModal/VBox/ContentHBox/EquipVBox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "🪖 Шолом: [Порожньо]"
+
+[node name="ChestSlot" type="Button" parent="Control/Center/InventoryModal/VBox/ContentHBox/EquipVBox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "🥋 Лати: [Порожньо]"
+
+[node name="WeaponSlot" type="Button" parent="Control/Center/InventoryModal/VBox/ContentHBox/EquipVBox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "⚔️ Зброя: [Порожньо]"
+
+[node name="ShieldSlot" type="Button" parent="Control/Center/InventoryModal/VBox/ContentHBox/EquipVBox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "🛡️ Щит: [Порожньо]"
+
+[node name="RingSlot" type="Button" parent="Control/Center/InventoryModal/VBox/ContentHBox/EquipVBox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "💍 Перстень: [Порожньо]"
+
+[node name="StatsPanel" type="PanelContainer" parent="Control/Center/InventoryModal/VBox/ContentHBox/EquipVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StatsVBox" type="VBoxContainer" parent="Control/Center/InventoryModal/VBox/ContentHBox/EquipVBox/StatsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="StatsDamageLabel" type="Label" parent="Control/Center/InventoryModal/VBox/ContentHBox/EquipVBox/StatsPanel/StatsVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.45, 0.35, 1)
+theme_override_font_sizes/font_size = 13
+text = "Атака: 25 (+0)"
+
+[node name="StatsArmorLabel" type="Label" parent="Control/Center/InventoryModal/VBox/ContentHBox/EquipVBox/StatsPanel/StatsVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.75, 1.0, 1)
+theme_override_font_sizes/font_size = 13
+text = "Броня: 0 (+0)"
+
+[node name="StatsHealthLabel" type="Label" parent="Control/Center/InventoryModal/VBox/ContentHBox/EquipVBox/StatsPanel/StatsVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.95, 0.5, 1)
+theme_override_font_sizes/font_size = 13
+text = "Здоров'я: 100 (+0)"
+
+[node name="VSeparator" type="VSeparator" parent="Control/Center/InventoryModal/VBox/ContentHBox"]
+layout_mode = 2
+
+[node name="BagVBox" type="VBoxContainer" parent="Control/Center/InventoryModal/VBox/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="BagTitle" type="Label" parent="Control/Center/InventoryModal/VBox/ContentHBox/BagVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.75, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+text = "СУМКА (Клік: одягти / випити):"
+
+[node name="Grid" type="GridContainer" parent="Control/Center/InventoryModal/VBox/ContentHBox/BagVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 4
+
+[node name="ItemDetailPanel" type="PanelContainer" parent="Control/Center/InventoryModal/VBox/ContentHBox/BagVBox"]
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+
+[node name="DetailLabel" type="Label" parent="Control/Center/InventoryModal/VBox/ContentHBox/BagVBox/ItemDetailPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+text = "Оберіть предмет у сумці..."
+autowrap_mode = 2
+
+[node name="HSeparator2" type="HSeparator" parent="Control/Center/InventoryModal/VBox"]
+layout_mode = 2
+
+[node name="CloseButton" type="Button" parent="Control/Center/InventoryModal/VBox"]
+custom_minimum_size = Vector2(220, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.95, 0.85, 0.6, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "ЗАКРИТИ ІНВЕНТАР (I / Esc)"
 
 [node name="DeathScreen" type="CenterContainer" parent="Control"]
 visible = false
