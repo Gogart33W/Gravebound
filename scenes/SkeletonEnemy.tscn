@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/Enemies/SkeletonEnemy.cs" id="1_enemy"]
+[ext_resource type="PackedScene" path="res://assets/models/enemies/skeleton_warrior.glb" id="2_skeleton"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_skeleton"]
+radius = 0.45
+height = 1.8
+
+[node name="SkeletonEnemy" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 3
+script = ExtResource("1_enemy")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_skeleton")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+path_desired_distance = 0.5
+target_desired_distance = 0.5
+path_max_distance = 3.0
+max_speed = 3.6
+
+[node name="skeleton_warrior" parent="." instance=ExtResource("2_skeleton")]

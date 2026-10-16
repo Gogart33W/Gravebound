@@ -1,0 +1,248 @@
+using Godot;
+using System;
+using Gravebound.Player;
+
+namespace Gravebound.Enemies;
+
+public partial class SkeletonEnemy : CharacterBody3D
+{
+    [Export] public float MoveSpeed { get; set; } = 3.2f;
+    [Export] public float AggroRange { get; set; } = 8.0f;
+    [Export] public float AttackRange { get; set; } = 1.8f;
+    [Export] public int AttackDamage { get; set; } = 8;
+    [Export] public int MaxHealth { get; set; } = 50;
+
+    public int CurrentHealth { get; private set; }
+    public bool IsDead => _isDead;
+
+    private NavigationAgent3D? _navAgent;
+    private AnimationPlayer? _animPlayer;
+    private PlayerController? _playerTarget;
+    private bool _isDead;
+    private bool _isAttacking;
+    private float _attackCooldown;
+    private float _staggerTime;
+    private string _currentAnim = "";
+    private Vector3 _spawnPosition;
+
+    [Signal] public delegate void EnemyDiedEventHandler(SkeletonEnemy enemy);
+
+    public override void _Ready()
+    {
+        AddToGroup("enemies");
+        _spawnPosition = GlobalPosition;
+        CurrentHealth = MaxHealth;
+        _navAgent = GetNodeOrNull<NavigationAgent3D>("NavigationAgent3D");
+        _animPlayer = FindAnimationPlayer(this);
+
+        Callable.From(ActorSetup).CallDeferred();
+        PlayAnimation("Idle");
+    }
+
+    private async void ActorSetup()
+    {
+        await ToSignal(GetTree(), SceneTree.SignalName.PhysicsFrame);
+        _playerTarget = PlayerController.Instance ?? GetTree().Root.FindChild("Player", true, false) as PlayerController;
+    }
+
+    private AnimationPlayer? FindAnimationPlayer(Node root)
+    {
+        if (root is AnimationPlayer ap) return ap;
+        foreach (Node child in root.GetChildren())
+        {
+            var found = FindAnimationPlayer(child);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    public override void _PhysicsProcess(double delta)
+    {
+        if (_isDead) return;
+
+        float dt = (float)delta;
+
+        if (_staggerTime > 0f)
+        {
+            _staggerTime -= dt;
+            Velocity = Velocity.MoveToward(Vector3.Zero, 12.0f * dt);
+            MoveAndSlide();
+            return;
+        }
+
+        if (_attackCooldown > 0f)
+        {
+            _attackCooldown -= dt;
+            if (_attackCooldown <= 0f)
+            {
+                _isAttacking = false;
+            }
+        }
+
+        if (_playerTarget == null)
+        {
+            _playerTarget = PlayerController.Instance;
+            if (_playerTarget == null) return;
+        }
+
+        // If player is dead, cease attacks and celebrate / idle
+        if (_playerTarget.IsDead)
+        {
+            Velocity = Velocity.MoveToward(Vector3.Zero, 10.0f * dt);
+            MoveAndSlide();
+            if (!_isAttacking)
+            {
+                if (_animPlayer != null && _animPlayer.HasAnimation("Cheer") && _currentAnim != "Cheer")
+                {
+                    PlayAnimation("Cheer");
+                }
+                else if (_currentAnim != "Cheer")
+                {
+                    PlayAnimation("Idle");
+                }
+            }
+            return;
+        }
+
+        float distToPlayer = GlobalPosition.DistanceTo(_playerTarget.GlobalPosition);
+
+        if (distToPlayer <= AttackRange)
+        {
+            // Close enough to strike
+            Velocity = Velocity.MoveToward(Vector3.Zero, 12.0f * dt);
+            LookAtTarget(_playerTarget.GlobalPosition, dt);
+
+            if (!_isAttacking && _attackCooldown <= 0f)
+            {
+                PerformAttack();
+            }
+        }
+        else if (distToPlayer <= AggroRange)
+        {
+            // Pursue player
+            if (!_isAttacking && _navAgent != null)
+            {
+                _navAgent.TargetPosition = _playerTarget.GlobalPosition;
+                Vector3 moveDir = Vector3.Zero;
+
+                if (!_navAgent.IsNavigationFinished())
+                {
+                    Vector3 nextPos = _navAgent.GetNextPathPosition();
+                    Vector3 diff = nextPos - GlobalPosition;
+                    diff.Y = 0;
+                    if (diff.Length() > 0.1f)
+                    {
+                        moveDir = diff.Normalized();
+                    }
+                }
+
+                // Fallback direct pursuit
+                if (moveDir == Vector3.Zero)
+                {
+                    Vector3 directDiff = _playerTarget.GlobalPosition - GlobalPosition;
+                    directDiff.Y = 0;
+                    if (directDiff.Length() > AttackRange)
+                    {
+                        moveDir = directDiff.Normalized();
+                    }
+                }
+
+                if (moveDir != Vector3.Zero)
+                {
+                    Velocity = moveDir * MoveSpeed;
+                    LookAtTarget(GlobalPosition + moveDir, dt);
+                    PlayAnimation("Walking_A");
+                }
+                else
+                {
+                    Velocity = Vector3.Zero;
+                    PlayAnimation("Idle");
+                }
+            }
+        }
+        else
+        {
+            Velocity = Vector3.Zero;
+            PlayAnimation("Idle");
+        }
+
+        MoveAndSlide();
+    }
+
+    private void LookAtTarget(Vector3 targetPos, float dt)
+    {
+        Vector3 dir = targetPos - GlobalPosition;
+        dir.Y = 0;
+        if (dir.LengthSquared() > 0.001f)
+        {
+            float targetAngle = Mathf.Atan2(dir.X, dir.Z);
+            float curAngle = Rotation.Y;
+            float smoothAngle = Mathf.LerpAngle(curAngle, targetAngle, 10.0f * dt);
+            Rotation = new Vector3(0, smoothAngle, 0);
+        }
+    }
+
+    private void PerformAttack()
+    {
+        _isAttacking = true;
+        _attackCooldown = 1.6f;
+        PlayAnimation("1H_Melee_Attack_Chop", true);
+
+        // Deal damage halfway through the swing
+        GetTree().CreateTimer(0.45f).Timeout += () =>
+        {
+            if (!_isDead && _playerTarget != null && !_playerTarget.IsDead)
+            {
+                float dist = GlobalPosition.DistanceTo(_playerTarget.GlobalPosition);
+                if (dist <= AttackRange + 0.6f)
+                {
+                    _playerTarget.TakeDamage(AttackDamage);
+                }
+            }
+        };
+    }
+
+    public void TakeDamage(int damage)
+    {
+        if (_isDead) return;
+
+        CurrentHealth -= damage;
+        _staggerTime = 0.3f; // Flinch briefly
+        _isAttacking = false;
+        _attackCooldown = Mathf.Max(_attackCooldown, 0.5f);
+
+        PlayAnimation("Hit_A", true);
+
+        if (CurrentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    private void Die()
+    {
+        _isDead = true;
+        _isAttacking = false;
+        Velocity = Vector3.Zero;
+        RemoveFromGroup("enemies");
+
+        PlayAnimation("Death_A", true);
+
+        var col = GetNodeOrNull<CollisionShape3D>("CollisionShape3D");
+        if (col != null) col.SetDeferred("disabled", true);
+
+        EmitSignal(SignalName.EnemyDied, this);
+    }
+
+    public void PlayAnimation(string animName, bool force = false)
+    {
+        if (_animPlayer == null) return;
+        if (!force && _currentAnim == animName) return;
+
+        if (_animPlayer.HasAnimation(animName))
+        {
+            _currentAnim = animName;
+            _animPlayer.Play(animName);
+        }
+    }
+}

@@ -1,0 +1,229 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/UI/GraveboundHUD.cs" id="1_hud"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_quest"]
+bg_color = Color(0.08, 0.09, 0.11, 0.85)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.65, 0.52, 0.28, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
+bg_color = Color(0.12, 0.12, 0.14, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.5, 0.4, 0.2, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_fill"]
+bg_color = Color(0.75, 0.12, 0.14, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lore"]
+bg_color = Color(0.06, 0.07, 0.08, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.75, 0.6, 0.3, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 24.0
+content_margin_top = 20.0
+content_margin_right = 24.0
+content_margin_bottom = 20.0
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1_hud")
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopRight" type="MarginContainer" parent="Control"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -340.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 140.0
+grow_horizontal = 0
+mouse_filter = 2
+
+[node name="QuestBox" type="PanelContainer" parent="Control/TopRight"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_quest")
+
+[node name="VBox" type="VBoxContainer" parent="Control/TopRight/QuestBox"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="QuestTitle" type="Label" parent="Control/TopRight/QuestBox/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.82, 0.45, 1)
+theme_override_font_sizes/font_size = 15
+text = "Розділ I: Пробудження в Попелі"
+
+[node name="QuestObjective" type="Label" parent="Control/TopRight/QuestBox/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_font_sizes/font_size = 13
+text = "• Знищіть скелетів-вартових: 0 / 3\n• Дослідіть давній вівтар у центрі арени"
+
+[node name="BottomBar" type="VBoxContainer" parent="Control"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -260.0
+offset_top = -80.0
+offset_right = 260.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+mouse_filter = 2
+
+[node name="HealthBar" type="ProgressBar" parent="Control/BottomBar"]
+custom_minimum_size = Vector2(360, 24)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_health_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_health_fill")
+value = 100.0
+show_percentage = false
+
+[node name="HealthLabel" type="Label" parent="Control/BottomBar/HealthBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "100 / 100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ControlsHint" type="Label" parent="Control/BottomBar"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 0.85)
+theme_override_font_sizes/font_size = 12
+text = "[ЛКМ]: Рух | [ПКМ/Пробіл]: Удар | [Коліщатко]: Зум | [F11]: Повний екран | [L]: Хроніка"
+horizontal_alignment = 1
+
+[node name="Center" type="CenterContainer" parent="Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LoreModal" type="PanelContainer" parent="Control/Center"]
+visible = false
+custom_minimum_size = Vector2(560, 320)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_lore")
+
+[node name="VBox" type="VBoxContainer" parent="Control/Center/LoreModal"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="Control/Center/LoreModal/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.82, 0.45, 1)
+theme_override_font_sizes/font_size = 18
+text = "Хроніка Могилонародженого: Пакт Мор-Гула"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Control/Center/LoreModal/VBox"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Body" type="Label" parent="Control/Center/LoreModal/VBox"]
+custom_minimum_size = Vector2(500, 180)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.88, 0.82, 1)
+theme_override_font_sizes/font_size = 14
+text = "«Коли небо впало, а перша імперія потонула в чорному попелі, Вартові склали нерозривну клятву крові. Тіла їхні були замуровані в граніт крипти, а душі зв'язані печатками Мор-Гула.\n\nТи — останній Могилонароджений (Gravebound). Пробуджений із праху, коли древня печать тріснула, ти ступаєш цим холодним камінням. Твій меч жадає спокою для тих, чиї кістки були підняті скверною...»"
+autowrap_mode = 2
+
+[node name="CloseHint" type="Label" parent="Control/Center/LoreModal/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+theme_override_font_sizes/font_size = 12
+text = "[Натисніть 'L' для закриття хроніки]"
+horizontal_alignment = 1
+
+[node name="DeathScreen" type="CenterContainer" parent="Control"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="VBox" type="VBoxContainer" parent="Control/DeathScreen"]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+
+[node name="DeathTitle" type="Label" parent="Control/DeathScreen/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.18, 0.18, 1)
+theme_override_font_sizes/font_size = 32
+text = "ТИ ПОЛІГ У ПОПЕЛІ"
+horizontal_alignment = 1
+
+[node name="DeathSub" type="Label" parent="Control/DeathScreen/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 0.9)
+theme_override_font_sizes/font_size = 15
+text = "Клятва Могилонародженого не дасть тобі спокою.\n[Натисніть Пробіл або ЛКМ, щоб повстати знову]"
+horizontal_alignment = 1

@@ -1,0 +1,44 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/Player/PlayerController.cs" id="1_player"]
+[ext_resource type="PackedScene" path="res://assets/models/characters/warrior.glb" id="2_warrior"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
+radius = 0.45
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_marker"]
+shading_mode = 0
+albedo_color = Color(0.2, 0.95, 0.75, 0.85)
+
+[sub_resource type="TorusMesh" id="TorusMesh_marker"]
+material = SubResource("StandardMaterial3D_marker")
+inner_radius = 0.35
+outer_radius = 0.45
+rings = 24
+ring_segments = 24
+
+[node name="Player" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_player")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+path_desired_distance = 0.4
+target_desired_distance = 0.4
+path_max_distance = 3.0
+max_speed = 6.5
+
+[node name="warrior" parent="." instance=ExtResource("2_warrior")]
+
+[node name="ClickMarker" type="Node3D" parent="."]
+top_level = true
+visible = false
+
+[node name="MarkerMesh" type="MeshInstance3D" parent="ClickMarker"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+mesh = SubResource("TorusMesh_marker")
