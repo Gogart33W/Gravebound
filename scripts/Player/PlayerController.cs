@@ -51,6 +51,14 @@ public partial class PlayerController : CharacterBody3D
         Instance = this;
     }
 
+    public override void _ExitTree()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
     public override void _Ready()
     {
         _initialSpawnPos = GlobalPosition;
@@ -163,21 +171,22 @@ public partial class PlayerController : CharacterBody3D
         var mousePos = GetViewport().GetMousePosition();
         var rayOrigin = camera.ProjectRayOrigin(mousePos);
         var rayDir = camera.ProjectRayNormal(mousePos);
+        var rayEnd = rayOrigin + rayDir * 300f;
 
         var space = GetWorld3D().DirectSpaceState;
-        // Check environment (1), enemies (4), and altar (1)
-        var query = PhysicsRayQueryParameters3D.Create(rayOrigin, rayOrigin + rayDir * 300f);
-        query.CollisionMask = 1 | 4;
-        query.CollideWithBodies = true;
-        query.CollideWithAreas = true;
-        query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
-        var result = space.IntersectRay(query);
+        var playerExclude = new Godot.Collections.Array<Rid> { GetRid() };
 
-        if (result.Count > 0 && result.ContainsKey("collider"))
+        // 1. Raycast for Enemies (Mask 4: Bodies only)
+        var enemyQuery = PhysicsRayQueryParameters3D.Create(rayOrigin, rayEnd);
+        enemyQuery.CollisionMask = 4;
+        enemyQuery.CollideWithBodies = true;
+        enemyQuery.CollideWithAreas = false;
+        enemyQuery.Exclude = playerExclude;
+        var enemyResult = space.IntersectRay(enemyQuery);
+
+        if (enemyResult.Count > 0 && enemyResult.ContainsKey("collider"))
         {
-            var collider = result["collider"].As<GodotObject>();
-
-            // 1. Clicked on an Enemy (Titan Quest Target Lock)
+            var collider = enemyResult["collider"].As<GodotObject>();
             if (collider is SkeletonEnemy enemy && !enemy.IsDead)
             {
                 _targetEnemy = enemy;
@@ -196,8 +205,20 @@ public partial class PlayerController : CharacterBody3D
                 }
                 return;
             }
+        }
 
-            // 2. Clicked on Altar Area
+        // 2. Raycast for Interactables: Altar, Portal (Mask 8: Areas only)
+        var interactQuery = PhysicsRayQueryParameters3D.Create(rayOrigin, rayEnd);
+        interactQuery.CollisionMask = 8;
+        interactQuery.CollideWithBodies = false;
+        interactQuery.CollideWithAreas = true;
+        interactQuery.Exclude = playerExclude;
+        var interactResult = space.IntersectRay(interactQuery);
+
+        if (interactResult.Count > 0 && interactResult.ContainsKey("collider"))
+        {
+            var collider = interactResult["collider"].As<GodotObject>();
+
             if (collider is CryptAltar altar)
             {
                 _targetAltar = altar;
@@ -206,17 +227,33 @@ public partial class PlayerController : CharacterBody3D
                 return;
             }
 
-            // 3. Clicked on Ground
-            if (result.ContainsKey("position"))
+            if (collider is CatacombsPortal portal)
             {
-                _targetEnemy = null;
                 _targetAltar = null;
-                MoveTo((Vector3)result["position"], showMarker: !isDragging);
+                _targetEnemy = null;
+                var targetPos = new Vector3(portal.GlobalPosition.X, 0f, portal.GlobalPosition.Z);
+                MoveTo(targetPos, showMarker: !isDragging);
                 return;
             }
         }
 
-        // Mathematical floor plane fallback
+        // 3. Raycast for World / Ground (Mask 1: Bodies only, NEVER areas)
+        var worldQuery = PhysicsRayQueryParameters3D.Create(rayOrigin, rayEnd);
+        worldQuery.CollisionMask = 1;
+        worldQuery.CollideWithBodies = true;
+        worldQuery.CollideWithAreas = false;
+        worldQuery.Exclude = playerExclude;
+        var worldResult = space.IntersectRay(worldQuery);
+
+        if (worldResult.Count > 0 && worldResult.ContainsKey("position"))
+        {
+            _targetEnemy = null;
+            _targetAltar = null;
+            MoveTo((Vector3)worldResult["position"], showMarker: !isDragging);
+            return;
+        }
+
+        // 4. Mathematical floor plane fallback
         var floorPlane = new Plane(Vector3.Up, 0.0f);
         var planeHit = floorPlane.IntersectsRay(rayOrigin, rayDir);
         if (planeHit.HasValue)
@@ -366,6 +403,7 @@ public partial class PlayerController : CharacterBody3D
     public override void _Process(double delta)
     {
         if (_isDead) return;
+        if (GraveboundHUD.Instance != null && GraveboundHUD.Instance.IsModalOpen) return;
 
         // Hover detection for enemy info
         var camera = GetViewport().GetCamera3D();

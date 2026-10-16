@@ -20,6 +20,14 @@ public partial class SoundManager : Node
         LoadStreams();
     }
 
+    public override void _ExitTree()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
     private void LoadStreams()
     {
         _swordSwing = GD.Load<AudioStream>("res://assets/audio/sword_swing.wav");

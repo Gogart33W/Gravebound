@@ -36,6 +36,14 @@ public partial class GraveboundHUD : CanvasLayer
         Instance = this;
     }
 
+    public override void _ExitTree()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
     public override void _Ready()
     {
         _healthBar = GetNodeOrNull<ProgressBar>("Control/BottomBar/HealthBar");
@@ -123,17 +131,11 @@ public partial class GraveboundHUD : CanvasLayer
     {
         if (@event is InputEventKey key && key.Pressed && !key.Echo)
         {
-            if (key.Keycode == Key.L || key.Keycode == Key.Escape)
+            if (key.Keycode == Key.Escape)
             {
                 if (_loreModal != null && _loreModal.Visible)
                 {
                     _loreModal.Visible = false;
-                    GetViewport().SetInputAsHandled();
-                    return;
-                }
-                else if (key.Keycode == Key.L)
-                {
-                    ToggleLoreModal();
                     GetViewport().SetInputAsHandled();
                 }
             }

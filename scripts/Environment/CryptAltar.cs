@@ -27,6 +27,14 @@ public partial class CryptAltar : Area3D
         Instance = this;
     }
 
+    public override void _ExitTree()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
     public override void _Ready()
     {
         _altarLight = GetNodeOrNull<OmniLight3D>("AltarGlow");
@@ -65,7 +73,7 @@ public partial class CryptAltar : Area3D
 
         if (@event is InputEventKey key && key.Pressed && !key.Echo)
         {
-            if (key.Keycode == Key.E || key.Keycode == Key.L)
+            if (key.Keycode == Key.E || key.PhysicalKeycode == Key.E)
             {
                 Inspect();
                 GetViewport().SetInputAsHandled();

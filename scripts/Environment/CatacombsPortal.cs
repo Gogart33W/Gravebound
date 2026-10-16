@@ -25,6 +25,14 @@ public partial class CatacombsPortal : Area3D
         Instance = this;
     }
 
+    public override void _ExitTree()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
     public override void _Ready()
     {
         _portalVfx = GetNodeOrNull<Node3D>("PortalVfx");
