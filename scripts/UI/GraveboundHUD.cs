@@ -19,6 +19,10 @@ public partial class GraveboundHUD : CanvasLayer
     private Control? _deathScreen;
     private PanelContainer? _victoryModal;
     private Button? _victoryContinueButton;
+    private Label? _victoryTitleLabel;
+    private Label? _victoryBodyLabel;
+
+    [Signal] public delegate void ContinuePressedEventHandler();
 
     // Top Target Health Bar
     private PanelContainer? _targetBarBox;
@@ -57,6 +61,8 @@ public partial class GraveboundHUD : CanvasLayer
         _deathScreen = GetNodeOrNull<Control>("Control/DeathScreen");
         _victoryModal = GetNodeOrNull<PanelContainer>("Control/Center/VictoryModal");
         _victoryContinueButton = GetNodeOrNull<Button>("Control/Center/VictoryModal/VBox/ContinueButton");
+        _victoryTitleLabel = GetNodeOrNull<Label>("Control/Center/VictoryModal/VBox/Title");
+        _victoryBodyLabel = GetNodeOrNull<Label>("Control/Center/VictoryModal/VBox/Body");
 
         _targetBarBox = GetNodeOrNull<PanelContainer>("Control/TopCenter/TargetBarBox");
         _targetHealthBar = GetNodeOrNull<ProgressBar>("Control/TopCenter/TargetBarBox/VBox/TargetHealthBar");
@@ -81,6 +87,7 @@ public partial class GraveboundHUD : CanvasLayer
             _victoryContinueButton.Pressed += () =>
             {
                 if (_victoryModal != null) _victoryModal.Visible = false;
+                EmitSignal(SignalName.ContinuePressed);
             };
         }
 
@@ -190,6 +197,13 @@ public partial class GraveboundHUD : CanvasLayer
         {
             _loreModal.Visible = !_loreModal.Visible;
         }
+    }
+
+    public void ConfigureVictory(string title, string body, string buttonText)
+    {
+        if (_victoryTitleLabel != null) _victoryTitleLabel.Text = title;
+        if (_victoryBodyLabel != null) _victoryBodyLabel.Text = body;
+        if (_victoryContinueButton != null) _victoryContinueButton.Text = buttonText;
     }
 
     public void ShowVictoryModal()
