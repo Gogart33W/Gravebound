@@ -31,6 +31,9 @@ public partial class PlayerController : CharacterBody3D
     private float _attackCooldown;
     private float _clickMarkerPulse;
     private float _repathTimer;
+    private float _invulnerabilityTimer;
+    private float _hitStun;
+    private float _deathTimer;
     private string _currentAnim = "";
 
     private Vector3 _targetDestination;
@@ -80,6 +83,18 @@ public partial class PlayerController : CharacterBody3D
             _clickMarker.Visible = false;
         }
 
+        if (_animPlayer != null)
+        {
+            string[] loopAnims = { "Idle", "Running_A", "Walking_A", "Cheer" };
+            foreach (var anim in loopAnims)
+            {
+                if (_animPlayer.HasAnimation(anim))
+                {
+                    _animPlayer.GetAnimation(anim).LoopMode = Animation.LoopModeEnum.Linear;
+                }
+            }
+        }
+
         Callable.From(ActorSetup).CallDeferred();
         PlayAnimation("Idle");
     }
@@ -108,10 +123,12 @@ public partial class PlayerController : CharacterBody3D
     {
         if (_isDead)
         {
-            if ((@event is InputEventKey deadKey && deadKey.Pressed && deadKey.Keycode == Key.Space) ||
-                (@event is InputEventMouseButton deadMb && deadMb.Pressed && (deadMb.ButtonIndex == MouseButton.Left || deadMb.ButtonIndex == MouseButton.Right)))
+            if (_deathTimer <= 0f)
             {
-                Respawn(_initialSpawnPos);
+                if (@event is InputEventKey deadKey && deadKey.Pressed && (deadKey.Keycode == Key.Space || deadKey.Keycode == Key.Enter))
+                {
+                    Respawn(_initialSpawnPos);
+                }
             }
             return;
         }
@@ -316,12 +333,12 @@ public partial class PlayerController : CharacterBody3D
         Velocity = Vector3.Zero;
         _hasTargetDestination = false;
 
-        // Face target enemy
+        // Face target enemy (+Pi offsets model forward towards -Z)
         Vector3 toEnemy = target.GlobalPosition - GlobalPosition;
         toEnemy.Y = 0;
         if (toEnemy.LengthSquared() > 0.01f)
         {
-            float targetAngle = Mathf.Atan2(toEnemy.X, toEnemy.Z);
+            float targetAngle = Mathf.Atan2(toEnemy.X, toEnemy.Z) + Mathf.Pi;
             Rotation = new Vector3(0, targetAngle, 0);
         }
 
@@ -354,7 +371,7 @@ public partial class PlayerController : CharacterBody3D
             lookDir.Y = 0;
             if (lookDir.LengthSquared() > 0.05f)
             {
-                float targetAngle = Mathf.Atan2(lookDir.X, lookDir.Z);
+                float targetAngle = Mathf.Atan2(lookDir.X, lookDir.Z) + Mathf.Pi;
                 Rotation = new Vector3(0, targetAngle, 0);
             }
         }
@@ -370,8 +387,8 @@ public partial class PlayerController : CharacterBody3D
             hitAny = true;
         }
 
-        // Cleave arc
-        Vector3 forward = new Vector3(Mathf.Sin(Rotation.Y), 0, Mathf.Cos(Rotation.Y)).Normalized();
+        // Cleave arc using true forward vector (-Transform.Basis.Z)
+        Vector3 forward = -Transform.Basis.Z.Normalized();
         var enemies = GetTree().GetNodesInGroup("enemies");
 
         foreach (Node node in enemies)
@@ -430,9 +447,16 @@ public partial class PlayerController : CharacterBody3D
 
     public override void _PhysicsProcess(double delta)
     {
-        if (_isDead) return;
-
         float dt = (float)delta;
+
+        if (_invulnerabilityTimer > 0f) _invulnerabilityTimer -= dt;
+        if (_hitStun > 0f) _hitStun -= dt;
+
+        if (_isDead)
+        {
+            if (_deathTimer > 0f) _deathTimer -= dt;
+            return;
+        }
 
         if (_attackCooldown > 0f)
         {
@@ -563,7 +587,7 @@ public partial class PlayerController : CharacterBody3D
 
                 if (moveDir.LengthSquared() > 0.001f)
                 {
-                    float targetAngle = Mathf.Atan2(moveDir.X, moveDir.Z);
+                    float targetAngle = Mathf.Atan2(moveDir.X, moveDir.Z) + Mathf.Pi;
                     float curAngle = Rotation.Y;
                     float smoothAngle = Mathf.LerpAngle(curAngle, targetAngle, RotationSpeed * dt);
                     Rotation = new Vector3(0, smoothAngle, 0);
@@ -594,6 +618,7 @@ public partial class PlayerController : CharacterBody3D
     public void PlayAnimation(string animName, bool force = false)
     {
         if (_animPlayer == null) return;
+        if (_hitStun > 0f && animName == "Idle" && !force) return;
         if (!force && _currentAnim == animName) return;
 
         if (_animPlayer.HasAnimation(animName))
@@ -605,8 +630,10 @@ public partial class PlayerController : CharacterBody3D
 
     public void TakeDamage(int damage)
     {
-        if (_isDead) return;
+        if (_isDead || _invulnerabilityTimer > 0f) return;
 
+        _invulnerabilityTimer = 0.35f;
+        _hitStun = 0.25f;
         CurrentHealth = Mathf.Max(0, CurrentHealth - damage);
         SoundManager.Instance?.PlayPlayerHit();
         EmitSignal(SignalName.HealthChanged, CurrentHealth, MaxHealth);
@@ -621,6 +648,7 @@ public partial class PlayerController : CharacterBody3D
     private void Die()
     {
         _isDead = true;
+        _deathTimer = 1.5f;
         _isAttacking = false;
         _hasTargetDestination = false;
         _targetEnemy = null;
@@ -645,6 +673,7 @@ public partial class PlayerController : CharacterBody3D
         _targetAltar = null;
         GlobalPosition = spawnPosition;
         Velocity = Vector3.Zero;
+        _invulnerabilityTimer = 1.0f;
 
         var col = GetNodeOrNull<CollisionShape3D>("CollisionShape3D");
         if (col != null) col.SetDeferred("disabled", false);
@@ -652,5 +681,15 @@ public partial class PlayerController : CharacterBody3D
         PlayAnimation("Idle", true);
         EmitSignal(SignalName.HealthChanged, CurrentHealth, MaxHealth);
         EmitSignal(SignalName.PlayerRespawned);
+
+        // Reset living enemies to their spawn positions and full health
+        var enemies = GetTree().GetNodesInGroup("enemies");
+        foreach (Node node in enemies)
+        {
+            if (node is SkeletonEnemy enemy && !enemy.IsDead)
+            {
+                enemy.ResetToSpawn();
+            }
+        }
     }
 }

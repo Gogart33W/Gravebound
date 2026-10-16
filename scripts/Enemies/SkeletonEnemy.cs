@@ -28,6 +28,7 @@ public partial class SkeletonEnemy : CharacterBody3D
     private bool _isAttacking;
     private float _attackCooldown;
     private float _staggerTime;
+    private int _attackId;
     private string _currentAnim = "";
     private Vector3 _spawnPosition;
 
@@ -43,6 +44,18 @@ public partial class SkeletonEnemy : CharacterBody3D
         _animPlayer = FindAnimationPlayer(this);
         _healthBarNode = GetNodeOrNull<Node3D>("HealthBar");
         _barFillAnchor = GetNodeOrNull<Node3D>("HealthBar/BarFillAnchor");
+
+        if (_animPlayer != null)
+        {
+            string[] loopAnims = { "Idle", "Walking_A", "Cheer" };
+            foreach (var anim in loopAnims)
+            {
+                if (_animPlayer.HasAnimation(anim))
+                {
+                    _animPlayer.GetAnimation(anim).LoopMode = Animation.LoopModeEnum.Linear;
+                }
+            }
+        }
 
         Callable.From(ActorSetup).CallDeferred();
         PlayAnimation("Idle");
@@ -98,19 +111,11 @@ public partial class SkeletonEnemy : CharacterBody3D
         // Cease combat if player is dead
         if (_playerTarget.IsDead)
         {
+            _isAttacking = false;
+            _attackId++;
             Velocity = Velocity.MoveToward(Vector3.Zero, 10.0f * dt);
             MoveAndSlide();
-            if (!_isAttacking)
-            {
-                if (_animPlayer != null && _animPlayer.HasAnimation("Cheer") && _currentAnim != "Cheer")
-                {
-                    PlayAnimation("Cheer");
-                }
-                else if (_currentAnim != "Cheer")
-                {
-                    PlayAnimation("Idle");
-                }
-            }
+            PlayAnimation("Idle");
             return;
         }
 
@@ -157,8 +162,26 @@ public partial class SkeletonEnemy : CharacterBody3D
                     }
                 }
 
+                // Soft separation from other skeletons so they don't clump
+                Vector3 separation = Vector3.Zero;
+                var enemies = GetTree().GetNodesInGroup("enemies");
+                foreach (Node node in enemies)
+                {
+                    if (node is SkeletonEnemy other && other != this && !other.IsDead)
+                    {
+                        Vector3 diff = GlobalPosition - other.GlobalPosition;
+                        diff.Y = 0;
+                        float d = diff.Length();
+                        if (d < 1.1f && d > 0.01f)
+                        {
+                            separation += (diff / d) * (1.1f - d) * 2.0f;
+                        }
+                    }
+                }
+
                 if (moveDir != Vector3.Zero)
                 {
+                    moveDir = (moveDir + separation).Normalized();
                     Velocity = moveDir * MoveSpeed;
                     LookAtTarget(GlobalPosition + moveDir, dt);
                     PlayAnimation("Walking_A");
@@ -168,6 +191,26 @@ public partial class SkeletonEnemy : CharacterBody3D
                     Velocity = Vector3.Zero;
                     PlayAnimation("Idle");
                 }
+            }
+        }
+        else if (distToPlayer > AggroRange * 1.5f && GlobalPosition.DistanceTo(_spawnPosition) > 0.5f)
+        {
+            // Leash: return to spawn position
+            Vector3 toSpawn = _spawnPosition - GlobalPosition;
+            toSpawn.Y = 0;
+            if (toSpawn.Length() > 0.3f)
+            {
+                Vector3 returnDir = toSpawn.Normalized();
+                Velocity = returnDir * MoveSpeed;
+                LookAtTarget(GlobalPosition + returnDir, dt);
+                PlayAnimation("Walking_A");
+            }
+            else
+            {
+                Velocity = Vector3.Zero;
+                PlayAnimation("Idle");
+                CurrentHealth = MaxHealth;
+                UpdateHealthBarVisual();
             }
         }
         else
@@ -185,7 +228,7 @@ public partial class SkeletonEnemy : CharacterBody3D
         dir.Y = 0;
         if (dir.LengthSquared() > 0.001f)
         {
-            float targetAngle = Mathf.Atan2(dir.X, dir.Z);
+            float targetAngle = Mathf.Atan2(dir.X, dir.Z) + Mathf.Pi;
             float curAngle = Rotation.Y;
             float smoothAngle = Mathf.LerpAngle(curAngle, targetAngle, 10.0f * dt);
             Rotation = new Vector3(0, smoothAngle, 0);
@@ -196,16 +239,25 @@ public partial class SkeletonEnemy : CharacterBody3D
     {
         _isAttacking = true;
         _attackCooldown = 1.6f;
+        int currentAttackId = ++_attackId;
         PlayAnimation("1H_Melee_Attack_Chop", true);
 
         GetTree().CreateTimer(0.45f).Timeout += () =>
         {
-            if (!_isDead && _playerTarget != null && !_playerTarget.IsDead)
+            if (_attackId != currentAttackId) return;
+            if (_isDead || _staggerTime > 0f || !_isAttacking) return;
+            if (_playerTarget != null && !_playerTarget.IsDead)
             {
-                float dist = GlobalPosition.DistanceTo(_playerTarget.GlobalPosition);
-                if (dist <= AttackRange + 0.6f)
+                // Facing check: skeleton must be facing player within cone
+                Vector3 toPlayer = (_playerTarget.GlobalPosition - GlobalPosition).Normalized();
+                Vector3 forward = -Transform.Basis.Z.Normalized();
+                if (forward.Dot(toPlayer) > 0.25f)
                 {
-                    _playerTarget.TakeDamage(AttackDamage);
+                    float dist = GlobalPosition.DistanceTo(_playerTarget.GlobalPosition);
+                    if (dist <= AttackRange + 0.4f)
+                    {
+                        _playerTarget.TakeDamage(AttackDamage);
+                    }
                 }
             }
         };
@@ -216,8 +268,9 @@ public partial class SkeletonEnemy : CharacterBody3D
         if (_isDead) return;
 
         CurrentHealth = Mathf.Max(0, CurrentHealth - damage);
-        _staggerTime = 0.28f;
+        _staggerTime = 0.35f;
         _isAttacking = false;
+        _attackId++; // Cancel current attack!
         _attackCooldown = Mathf.Max(_attackCooldown, 0.45f);
 
         // Spawn floating damage numbers & play hit sound
@@ -275,5 +328,19 @@ public partial class SkeletonEnemy : CharacterBody3D
             _currentAnim = animName;
             _animPlayer.Play(animName);
         }
+    }
+
+    public void ResetToSpawn()
+    {
+        if (_isDead) return;
+        GlobalPosition = _spawnPosition;
+        CurrentHealth = MaxHealth;
+        _isAttacking = false;
+        _attackCooldown = 0f;
+        _staggerTime = 0f;
+        _attackId++;
+        Velocity = Vector3.Zero;
+        UpdateHealthBarVisual();
+        PlayAnimation("Idle", true);
     }
 }
