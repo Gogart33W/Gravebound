@@ -191,15 +191,11 @@ collision_mask = 6
 [node name="Player" parent="." instance=ExtResource("3_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 7.5)
 
-[node name="CameraRig" type="Node3D" parent="." node_paths=PackedStringArray("Target")]
-transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 14, 14)
-script = ExtResource("7_camera")
-Target = NodePath("../Player")
-
-[node name="Camera3D" type="Camera3D" parent="CameraRig"]
+[node name="IsometricCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 14, 21.5)
 current = true
-fov = 48.0
-size = 18.0
+fov = 42.0
+script = ExtResource("7_camera")
 
 [node name="Enemies" type="Node" parent="."]
 
