@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/UI/GraveboundHUD.cs" id="1_hud"]
 
@@ -18,6 +18,22 @@ content_margin_top = 10.0
 content_margin_right = 14.0
 content_margin_bottom = 10.0
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_target_bg"]
+bg_color = Color(0.08, 0.08, 0.1, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.7, 0.2, 0.2, 0.85)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_bg"]
 bg_color = Color(0.12, 0.12, 0.14, 0.9)
 border_width_left = 2
@@ -32,6 +48,13 @@ corner_radius_bottom_left = 4
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_health_fill"]
 bg_color = Color(0.75, 0.12, 0.14, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_target_fill"]
+bg_color = Color(0.85, 0.2, 0.15, 1)
 corner_radius_top_left = 3
 corner_radius_top_right = 3
 corner_radius_bottom_right = 3
@@ -64,6 +87,62 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="TopCenter" type="CenterContainer" parent="Control"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 20.0
+offset_right = 200.0
+offset_bottom = 75.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="TargetBarBox" type="PanelContainer" parent="Control/TopCenter"]
+visible = false
+custom_minimum_size = Vector2(360, 48)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_target_bg")
+
+[node name="VBox" type="VBoxContainer" parent="Control/TopCenter/TargetBarBox"]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+
+[node name="TargetName" type="Label" parent="Control/TopCenter/TargetBarBox/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.85, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+text = "Скелет-вартовий Мор-Гула"
+horizontal_alignment = 1
+
+[node name="TargetHealthBar" type="ProgressBar" parent="Control/TopCenter/TargetBarBox/VBox"]
+custom_minimum_size = Vector2(320, 16)
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_health_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_target_fill")
+value = 50.0
+show_percentage = false
+
+[node name="TargetHpLabel" type="Label" parent="Control/TopCenter/TargetBarBox/VBox/TargetHealthBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "50 / 50"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="TopRight" type="MarginContainer" parent="Control"]
 layout_mode = 1
@@ -100,6 +179,26 @@ theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
 theme_override_font_sizes/font_size = 13
 text = "• Знищіть скелетів-вартових: 0 / 3\n• Дослідіть давній вівтар у центрі арени"
 
+[node name="InteractPrompt" type="Label" parent="Control"]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -250.0
+offset_top = -125.0
+offset_right = 250.0
+offset_bottom = -95.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.3, 0.95, 0.75, 1)
+theme_override_font_sizes/font_size = 15
+text = "[E] або [L] або Клік: Дослідити Вівтар Мор-Гула"
+horizontal_alignment = 1
+
 [node name="BottomBar" type="VBoxContainer" parent="Control"]
 layout_mode = 1
 anchors_preset = 7
@@ -107,9 +206,9 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -260.0
+offset_left = -280.0
 offset_top = -80.0
-offset_right = 260.0
+offset_right = 280.0
 offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 0
@@ -145,7 +244,7 @@ layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 0.85)
 theme_override_font_sizes/font_size = 12
-text = "[ЛКМ]: Рух | [ПКМ/Пробіл]: Удар | [Коліщатко]: Зум | [F11]: Повний екран | [L]: Хроніка"
+text = "[ПКМ / ЛКМ]: Рух та Атака по ворогу | [Коліщатко]: Зум | [F11]: Повний екран | [E / L]: Хроніка"
 horizontal_alignment = 1
 
 [node name="Center" type="CenterContainer" parent="Control"]
@@ -194,7 +293,7 @@ layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
 theme_override_font_sizes/font_size = 12
-text = "[Натисніть 'L' для закриття хроніки]"
+text = "[Натисніть 'E', 'L' або Esc для закриття хроніки]"
 horizontal_alignment = 1
 
 [node name="DeathScreen" type="CenterContainer" parent="Control"]
@@ -225,5 +324,5 @@ layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 0.9)
 theme_override_font_sizes/font_size = 15
-text = "Клятва Могилонародженого не дасть тобі спокою.\n[Натисніть Пробіл або ЛКМ, щоб повстати знову]"
+text = "Клятва Могилонародженого не дасть тобі спокою.\n[Натисніть Пробіл або ЛКМ/ПКМ, щоб повстати знову]"
 horizontal_alignment = 1

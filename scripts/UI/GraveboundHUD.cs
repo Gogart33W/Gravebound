@@ -6,6 +6,8 @@ namespace Gravebound.UI;
 
 public partial class GraveboundHUD : CanvasLayer
 {
+    public static GraveboundHUD? Instance { get; private set; }
+
     private ProgressBar? _healthBar;
     private Label? _healthLabel;
     private Label? _questTitleLabel;
@@ -14,6 +16,19 @@ public partial class GraveboundHUD : CanvasLayer
     private Label? _loreTitleLabel;
     private Label? _loreBodyLabel;
     private Control? _deathScreen;
+    private Label? _interactPrompt;
+
+    // Titan Quest Top Target Health Bar
+    private PanelContainer? _targetBarBox;
+    private ProgressBar? _targetHealthBar;
+    private Label? _targetNameLabel;
+    private Label? _targetHpLabel;
+    private float _targetBarHideTimer;
+
+    public override void _EnterTree()
+    {
+        Instance = this;
+    }
 
     public override void _Ready()
     {
@@ -25,16 +40,17 @@ public partial class GraveboundHUD : CanvasLayer
         _loreTitleLabel = GetNodeOrNull<Label>("Control/Center/LoreModal/VBox/Title");
         _loreBodyLabel = GetNodeOrNull<Label>("Control/Center/LoreModal/VBox/Body");
         _deathScreen = GetNodeOrNull<Control>("Control/DeathScreen");
+        _interactPrompt = GetNodeOrNull<Label>("Control/InteractPrompt");
 
-        if (_loreModal != null)
-        {
-            _loreModal.Visible = false;
-        }
+        _targetBarBox = GetNodeOrNull<PanelContainer>("Control/TopCenter/TargetBarBox");
+        _targetHealthBar = GetNodeOrNull<ProgressBar>("Control/TopCenter/TargetBarBox/VBox/TargetHealthBar");
+        _targetNameLabel = GetNodeOrNull<Label>("Control/TopCenter/TargetBarBox/VBox/TargetName");
+        _targetHpLabel = GetNodeOrNull<Label>("Control/TopCenter/TargetBarBox/VBox/TargetHealthBar/TargetHpLabel");
 
-        if (_deathScreen != null)
-        {
-            _deathScreen.Visible = false;
-        }
+        if (_loreModal != null) _loreModal.Visible = false;
+        if (_deathScreen != null) _deathScreen.Visible = false;
+        if (_interactPrompt != null) _interactPrompt.Visible = false;
+        if (_targetBarBox != null) _targetBarBox.Visible = false;
 
         var player = PlayerController.Instance ?? GetTree().Root.FindChild("Player", true, false) as PlayerController;
         if (player != null)
@@ -43,6 +59,76 @@ public partial class GraveboundHUD : CanvasLayer
             player.PlayerDied += OnPlayerDied;
             player.PlayerRespawned += OnPlayerRespawned;
             OnHealthChanged(player.CurrentHealth, player.MaxHealth);
+        }
+    }
+
+    public override void _Process(double delta)
+    {
+        if (_targetBarHideTimer > 0f)
+        {
+            _targetBarHideTimer -= (float)delta;
+            if (_targetBarHideTimer <= 0f)
+            {
+                if (_targetBarBox != null) _targetBarBox.Visible = false;
+            }
+        }
+    }
+
+    public void ShowTargetEnemy(string name, int currentHp, int maxHp)
+    {
+        if (_targetBarBox != null) _targetBarBox.Visible = true;
+        if (_targetNameLabel != null) _targetNameLabel.Text = name;
+        if (_targetHealthBar != null)
+        {
+            _targetHealthBar.MaxValue = maxHp;
+            _targetHealthBar.Value = Mathf.Max(0, currentHp);
+        }
+        if (_targetHpLabel != null)
+        {
+            _targetHpLabel.Text = $"{Mathf.Max(0, currentHp)} / {maxHp}";
+        }
+        _targetBarHideTimer = 3.5f;
+    }
+
+    public void ClearTargetEnemy()
+    {
+        if (_targetBarBox != null) _targetBarBox.Visible = false;
+    }
+
+    public void ShowInteractPrompt(string text)
+    {
+        if (_interactPrompt != null)
+        {
+            _interactPrompt.Text = text;
+            _interactPrompt.Visible = true;
+        }
+    }
+
+    public void HideInteractPrompt()
+    {
+        if (_interactPrompt != null)
+        {
+            _interactPrompt.Visible = false;
+        }
+    }
+
+    public override void _Input(InputEvent @event)
+    {
+        if (@event is InputEventKey key && key.Pressed && !key.Echo)
+        {
+            if (key.Keycode == Key.L)
+            {
+                ToggleLoreModal();
+                GetViewport().SetInputAsHandled();
+            }
+            else if (key.Keycode == Key.Escape)
+            {
+                if (_loreModal != null && _loreModal.Visible)
+                {
+                    _loreModal.Visible = false;
+                    GetViewport().SetInputAsHandled();
+                }
+            }
         }
     }
 
@@ -59,17 +145,6 @@ public partial class GraveboundHUD : CanvasLayer
         if (_deathScreen != null)
         {
             _deathScreen.Visible = false;
-        }
-    }
-
-    public override void _UnhandledInput(InputEvent @event)
-    {
-        if (@event is InputEventKey key && key.Pressed && !key.Echo)
-        {
-            if (key.Keycode == Key.L)
-            {
-                ToggleLoreModal();
-            }
         }
     }
 

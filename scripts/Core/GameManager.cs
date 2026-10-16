@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using Gravebound.Enemies;
+using Gravebound.Environment;
 using Gravebound.Player;
 using Gravebound.UI;
 
@@ -15,6 +16,7 @@ public partial class GameManager : Node3D
     private GraveboundHUD? _hud;
     private int _skeletonsDefeated = 0;
     private const int TotalSkeletonsGoal = 3;
+    private bool _altarInspected = false;
 
     public override void _Ready()
     {
@@ -39,39 +41,46 @@ public partial class GameManager : Node3D
             }
         }
 
-        InitializeQuest();
+        // Hook altar inspection
+        var altar = GetNodeOrNull<CryptAltar>("AltarArea");
+        if (altar != null)
+        {
+            altar.AltarInspected += OnAltarInspected;
+        }
+
+        UpdateQuestState();
     }
 
-    private void InitializeQuest()
+    private void UpdateQuestState()
     {
-        if (_hud != null)
+        if (_hud == null) return;
+
+        if (_skeletonsDefeated >= TotalSkeletonsGoal && _altarInspected)
         {
             _hud.UpdateQuest(
-                "Розділ I: Пробудження в Попелі",
-                $"Знищіть скелетів-вартових склепу: {_skeletonsDefeated} / {TotalSkeletonsGoal}\nДослідіть давній вівтар Мор-Гула (центр арени)"
+                "Розділ I: Очищення Завершено!",
+                "• Вартові склепу знищені (3 / 3)\n• Таємницю Вівтаря Мор-Гула відкрито\nШлях до нижніх катакомб пробуджено..."
             );
         }
+        else
+        {
+            string altarStatus = _altarInspected ? "Вівтар Мор-Гула досліджено" : "Дослідіть вівтар у центрі [E / L]";
+            _hud.UpdateQuest(
+                "Розділ I: Пробудження в Попелі",
+                $"• Знищіть скелетів-вартових: {_skeletonsDefeated} / {TotalSkeletonsGoal}\n• {altarStatus}"
+            );
+        }
+    }
+
+    private void OnAltarInspected()
+    {
+        _altarInspected = true;
+        UpdateQuestState();
     }
 
     private void OnSkeletonDied(SkeletonEnemy enemy)
     {
         _skeletonsDefeated++;
-        if (_hud != null)
-        {
-            if (_skeletonsDefeated >= TotalSkeletonsGoal)
-            {
-                _hud.UpdateQuest(
-                    "Розділ I: Очищення Завершено",
-                    "Вартові подолані! Підійдіть до вівтаря та натисніть [L], щоб прочитати Хроніку."
-                );
-            }
-            else
-            {
-                _hud.UpdateQuest(
-                    "Розділ I: Пробудження в Попелі",
-                    $"Знищіть скелетів-вартових склепу: {_skeletonsDefeated} / {TotalSkeletonsGoal}"
-                );
-            }
-        }
+        UpdateQuestState();
     }
 }

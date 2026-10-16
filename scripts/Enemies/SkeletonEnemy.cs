@@ -1,13 +1,16 @@
 using Godot;
 using System;
+using Gravebound.Audio;
 using Gravebound.Player;
+using Gravebound.UI;
 
 namespace Gravebound.Enemies;
 
 public partial class SkeletonEnemy : CharacterBody3D
 {
+    [Export] public string EnemyName { get; set; } = "Скелет-вартовий Мор-Гула";
     [Export] public float MoveSpeed { get; set; } = 3.2f;
-    [Export] public float AggroRange { get; set; } = 8.0f;
+    [Export] public float AggroRange { get; set; } = 8.5f;
     [Export] public float AttackRange { get; set; } = 1.8f;
     [Export] public int AttackDamage { get; set; } = 8;
     [Export] public int MaxHealth { get; set; } = 50;
@@ -18,6 +21,9 @@ public partial class SkeletonEnemy : CharacterBody3D
     private NavigationAgent3D? _navAgent;
     private AnimationPlayer? _animPlayer;
     private PlayerController? _playerTarget;
+    private Node3D? _healthBarNode;
+    private Node3D? _barFillAnchor;
+
     private bool _isDead;
     private bool _isAttacking;
     private float _attackCooldown;
@@ -32,11 +38,15 @@ public partial class SkeletonEnemy : CharacterBody3D
         AddToGroup("enemies");
         _spawnPosition = GlobalPosition;
         CurrentHealth = MaxHealth;
+
         _navAgent = GetNodeOrNull<NavigationAgent3D>("NavigationAgent3D");
         _animPlayer = FindAnimationPlayer(this);
+        _healthBarNode = GetNodeOrNull<Node3D>("HealthBar");
+        _barFillAnchor = GetNodeOrNull<Node3D>("HealthBar/BarFillAnchor");
 
         Callable.From(ActorSetup).CallDeferred();
         PlayAnimation("Idle");
+        UpdateHealthBarVisual();
     }
 
     private async void ActorSetup()
@@ -65,7 +75,7 @@ public partial class SkeletonEnemy : CharacterBody3D
         if (_staggerTime > 0f)
         {
             _staggerTime -= dt;
-            Velocity = Velocity.MoveToward(Vector3.Zero, 12.0f * dt);
+            Velocity = Velocity.MoveToward(Vector3.Zero, 14.0f * dt);
             MoveAndSlide();
             return;
         }
@@ -85,7 +95,7 @@ public partial class SkeletonEnemy : CharacterBody3D
             if (_playerTarget == null) return;
         }
 
-        // If player is dead, cease attacks and celebrate / idle
+        // Cease combat if player is dead
         if (_playerTarget.IsDead)
         {
             Velocity = Velocity.MoveToward(Vector3.Zero, 10.0f * dt);
@@ -108,7 +118,7 @@ public partial class SkeletonEnemy : CharacterBody3D
 
         if (distToPlayer <= AttackRange)
         {
-            // Close enough to strike
+            // Within striking distance
             Velocity = Velocity.MoveToward(Vector3.Zero, 12.0f * dt);
             LookAtTarget(_playerTarget.GlobalPosition, dt);
 
@@ -188,7 +198,6 @@ public partial class SkeletonEnemy : CharacterBody3D
         _attackCooldown = 1.6f;
         PlayAnimation("1H_Melee_Attack_Chop", true);
 
-        // Deal damage halfway through the swing
         GetTree().CreateTimer(0.45f).Timeout += () =>
         {
             if (!_isDead && _playerTarget != null && !_playerTarget.IsDead)
@@ -206,16 +215,32 @@ public partial class SkeletonEnemy : CharacterBody3D
     {
         if (_isDead) return;
 
-        CurrentHealth -= damage;
-        _staggerTime = 0.3f; // Flinch briefly
+        CurrentHealth = Mathf.Max(0, CurrentHealth - damage);
+        _staggerTime = 0.28f;
         _isAttacking = false;
-        _attackCooldown = Mathf.Max(_attackCooldown, 0.5f);
+        _attackCooldown = Mathf.Max(_attackCooldown, 0.45f);
+
+        // Spawn floating damage numbers & play hit sound
+        DamageNumber.Spawn(this, GlobalPosition + Vector3.Up * 1.8f, damage);
+        SoundManager.Instance?.PlaySkeletonHit(GlobalPosition);
+
+        UpdateHealthBarVisual();
+        GraveboundHUD.Instance?.ShowTargetEnemy(EnemyName, CurrentHealth, MaxHealth);
 
         PlayAnimation("Hit_A", true);
 
         if (CurrentHealth <= 0)
         {
             Die();
+        }
+    }
+
+    private void UpdateHealthBarVisual()
+    {
+        if (_barFillAnchor != null)
+        {
+            float ratio = Mathf.Clamp((float)CurrentHealth / MaxHealth, 0.0f, 1.0f);
+            _barFillAnchor.Scale = new Vector3(ratio, 1.0f, 1.0f);
         }
     }
 
@@ -226,6 +251,12 @@ public partial class SkeletonEnemy : CharacterBody3D
         Velocity = Vector3.Zero;
         RemoveFromGroup("enemies");
 
+        if (_healthBarNode != null)
+        {
+            _healthBarNode.Visible = false;
+        }
+
+        SoundManager.Instance?.PlaySkeletonDeath(GlobalPosition);
         PlayAnimation("Death_A", true);
 
         var col = GetNodeOrNull<CollisionShape3D>("CollisionShape3D");
