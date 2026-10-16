@@ -44,6 +44,12 @@ public partial class SkeletonEnemy : CharacterBody3D
         _animPlayer = FindAnimationPlayer(this);
         _healthBarNode = GetNodeOrNull<Node3D>("HealthBar");
         _barFillAnchor = GetNodeOrNull<Node3D>("HealthBar/BarFillAnchor");
+        if (_healthBarNode != null)
+        {
+            // Detach from body rotation so the bar doesn't swing around with the skeleton
+            _healthBarNode.TopLevel = true;
+            _healthBarNode.GlobalPosition = GlobalPosition + Vector3.Up * 2.2f;
+        }
 
         if (_animPlayer != null)
         {
@@ -77,6 +83,14 @@ public partial class SkeletonEnemy : CharacterBody3D
             if (found != null) return found;
         }
         return null;
+    }
+
+    public override void _Process(double delta)
+    {
+        if (_healthBarNode != null && !_isDead)
+        {
+            _healthBarNode.GlobalPosition = GlobalPosition + Vector3.Up * 2.2f;
+        }
     }
 
     public override void _PhysicsProcess(double delta)
@@ -228,7 +242,7 @@ public partial class SkeletonEnemy : CharacterBody3D
         dir.Y = 0;
         if (dir.LengthSquared() > 0.001f)
         {
-            float targetAngle = Mathf.Atan2(dir.X, dir.Z) + Mathf.Pi;
+            float targetAngle = Mathf.Atan2(dir.X, dir.Z);
             float curAngle = Rotation.Y;
             float smoothAngle = Mathf.LerpAngle(curAngle, targetAngle, 10.0f * dt);
             Rotation = new Vector3(0, smoothAngle, 0);
@@ -250,7 +264,7 @@ public partial class SkeletonEnemy : CharacterBody3D
             {
                 // Facing check: skeleton must be facing player within cone
                 Vector3 toPlayer = (_playerTarget.GlobalPosition - GlobalPosition).Normalized();
-                Vector3 forward = -Transform.Basis.Z.Normalized();
+                Vector3 forward = Transform.Basis.Z.Normalized();
                 if (forward.Dot(toPlayer) > 0.25f)
                 {
                     float dist = GlobalPosition.DistanceTo(_playerTarget.GlobalPosition);
@@ -310,6 +324,7 @@ public partial class SkeletonEnemy : CharacterBody3D
         }
 
         SoundManager.Instance?.PlaySkeletonDeath(GlobalPosition);
+        GraveboundHUD.Instance?.ClearTargetEnemy();
         PlayAnimation("Death_A", true);
 
         var col = GetNodeOrNull<CollisionShape3D>("CollisionShape3D");

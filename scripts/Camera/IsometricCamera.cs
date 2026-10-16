@@ -49,7 +49,7 @@ public partial class IsometricCamera : Camera3D
         }
     }
 
-    public override void _Process(double delta)
+    public override void _PhysicsProcess(double delta)
     {
         if (_target == null)
         {

@@ -338,7 +338,7 @@ public partial class PlayerController : CharacterBody3D
         toEnemy.Y = 0;
         if (toEnemy.LengthSquared() > 0.01f)
         {
-            float targetAngle = Mathf.Atan2(toEnemy.X, toEnemy.Z) + Mathf.Pi;
+            float targetAngle = Mathf.Atan2(toEnemy.X, toEnemy.Z);
             Rotation = new Vector3(0, targetAngle, 0);
         }
 
@@ -371,7 +371,7 @@ public partial class PlayerController : CharacterBody3D
             lookDir.Y = 0;
             if (lookDir.LengthSquared() > 0.05f)
             {
-                float targetAngle = Mathf.Atan2(lookDir.X, lookDir.Z) + Mathf.Pi;
+                float targetAngle = Mathf.Atan2(lookDir.X, lookDir.Z);
                 Rotation = new Vector3(0, targetAngle, 0);
             }
         }
@@ -387,8 +387,8 @@ public partial class PlayerController : CharacterBody3D
             hitAny = true;
         }
 
-        // Cleave arc using true forward vector (-Transform.Basis.Z)
-        Vector3 forward = -Transform.Basis.Z.Normalized();
+        // Cleave arc: model faces local +Z (glTF convention)
+        Vector3 forward = Transform.Basis.Z.Normalized();
         var enemies = GetTree().GetNodesInGroup("enemies");
 
         foreach (Node node in enemies)
@@ -587,7 +587,7 @@ public partial class PlayerController : CharacterBody3D
 
                 if (moveDir.LengthSquared() > 0.001f)
                 {
-                    float targetAngle = Mathf.Atan2(moveDir.X, moveDir.Z) + Mathf.Pi;
+                    float targetAngle = Mathf.Atan2(moveDir.X, moveDir.Z);
                     float curAngle = Rotation.Y;
                     float smoothAngle = Mathf.LerpAngle(curAngle, targetAngle, RotationSpeed * dt);
                     Rotation = new Vector3(0, smoothAngle, 0);
