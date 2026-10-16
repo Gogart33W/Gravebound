@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using Gravebound.Audio;
+using Gravebound.Core;
 using Gravebound.Enemies;
 using Gravebound.Environment;
 using Gravebound.UI;
@@ -34,6 +35,7 @@ public partial class PlayerController : CharacterBody3D
     private float _invulnerabilityTimer;
     private float _hitStun;
     private float _deathTimer;
+    private float _fallSpeed;
     private string _currentAnim = "";
 
     private Vector3 _targetDestination;
@@ -64,6 +66,7 @@ public partial class PlayerController : CharacterBody3D
 
     public override void _Ready()
     {
+        CharacterMotion.Configure(this);
         _initialSpawnPos = GlobalPosition;
         _targetDestination = GlobalPosition;
         _navAgent = NavigationAgentPath != null && !NavigationAgentPath.IsEmpty
@@ -285,6 +288,16 @@ public partial class PlayerController : CharacterBody3D
     {
         if (_isDead) return;
 
+        // Clicks on wall tops / pillars / outside the arena are projected onto the walkable navmesh
+        if (_navAgent != null)
+        {
+            Rid map = _navAgent.GetNavigationMap();
+            if (map.IsValid)
+            {
+                worldTarget = NavigationServer3D.MapGetClosestPoint(map, worldTarget);
+            }
+        }
+
         _targetDestination = worldTarget;
         _hasTargetDestination = true;
 
@@ -496,7 +509,7 @@ public partial class PlayerController : CharacterBody3D
         if (_isAttacking)
         {
             Velocity = Velocity.MoveToward(Vector3.Zero, Acceleration * dt);
-            MoveAndSlide();
+            CharacterMotion.Move(this, ref _fallSpeed, dt);
             return;
         }
 
@@ -508,7 +521,7 @@ public partial class PlayerController : CharacterBody3D
                 _targetEnemy = null;
                 _hasTargetDestination = false;
                 StopMoving(dt);
-                MoveAndSlide();
+                CharacterMotion.Move(this, ref _fallSpeed, dt);
                 return;
             }
 
@@ -526,7 +539,7 @@ public partial class PlayerController : CharacterBody3D
                 {
                     PlayAnimation("Idle");
                 }
-                MoveAndSlide();
+                CharacterMotion.Move(this, ref _fallSpeed, dt);
                 return;
             }
             else
@@ -552,7 +565,7 @@ public partial class PlayerController : CharacterBody3D
                 _targetAltar = null;
                 _hasTargetDestination = false;
                 StopMoving(dt);
-                MoveAndSlide();
+                CharacterMotion.Move(this, ref _fallSpeed, dt);
                 return;
             }
         }
@@ -580,7 +593,18 @@ public partial class PlayerController : CharacterBody3D
 
                 if (moveDir == Vector3.Zero)
                 {
-                    moveDir = diff.Normalized();
+                    if (_navAgent == null)
+                    {
+                        moveDir = diff.Normalized();
+                    }
+                    else
+                    {
+                        // Path finished (target reached or unreachable): stop instead of pushing into walls
+                        _hasTargetDestination = false;
+                        StopMoving(dt);
+                        CharacterMotion.Move(this, ref _fallSpeed, dt);
+                        return;
+                    }
                 }
 
                 Velocity = Velocity.MoveToward(moveDir * MoveSpeed, Acceleration * dt);
@@ -606,7 +630,7 @@ public partial class PlayerController : CharacterBody3D
             StopMoving(dt);
         }
 
-        MoveAndSlide();
+        CharacterMotion.Move(this, ref _fallSpeed, dt);
     }
 
     private void StopMoving(float dt)

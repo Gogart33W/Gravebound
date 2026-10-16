@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using Gravebound.Audio;
+using Gravebound.Core;
 using Gravebound.Player;
 using Gravebound.UI;
 
@@ -29,6 +30,7 @@ public partial class SkeletonEnemy : CharacterBody3D
     private float _attackCooldown;
     private float _staggerTime;
     private int _attackId;
+    private float _fallSpeed;
     private string _currentAnim = "";
     private Vector3 _spawnPosition;
 
@@ -37,6 +39,7 @@ public partial class SkeletonEnemy : CharacterBody3D
     public override void _Ready()
     {
         AddToGroup("enemies");
+        CharacterMotion.Configure(this);
         _spawnPosition = GlobalPosition;
         CurrentHealth = MaxHealth;
 
@@ -103,7 +106,7 @@ public partial class SkeletonEnemy : CharacterBody3D
         {
             _staggerTime -= dt;
             Velocity = Velocity.MoveToward(Vector3.Zero, 14.0f * dt);
-            MoveAndSlide();
+            CharacterMotion.Move(this, ref _fallSpeed, dt);
             return;
         }
 
@@ -128,7 +131,7 @@ public partial class SkeletonEnemy : CharacterBody3D
             _isAttacking = false;
             _attackId++;
             Velocity = Velocity.MoveToward(Vector3.Zero, 10.0f * dt);
-            MoveAndSlide();
+            CharacterMotion.Move(this, ref _fallSpeed, dt);
             PlayAnimation("Idle");
             return;
         }
@@ -233,7 +236,7 @@ public partial class SkeletonEnemy : CharacterBody3D
             PlayAnimation("Idle");
         }
 
-        MoveAndSlide();
+        CharacterMotion.Move(this, ref _fallSpeed, dt);
     }
 
     private void LookAtTarget(Vector3 targetPos, float dt)
