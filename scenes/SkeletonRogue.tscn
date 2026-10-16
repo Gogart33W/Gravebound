@@ -1,0 +1,66 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/Enemies/SkeletonEnemy.cs" id="1_enemy"]
+[ext_resource type="PackedScene" path="res://assets/models/enemies/skeleton_rogue.glb" id="2_skeleton"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_skeleton"]
+radius = 0.45
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bar_bg"]
+shading_mode = 0
+billboard_mode = 1
+no_depth_test = true
+albedo_color = Color(0.1, 0.1, 0.12, 0.85)
+
+[sub_resource type="QuadMesh" id="QuadMesh_bar_bg"]
+material = SubResource("StandardMaterial3D_bar_bg")
+size = Vector2(0.9, 0.12)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bar_fill"]
+shading_mode = 0
+billboard_mode = 1
+no_depth_test = true
+render_priority = 1
+albedo_color = Color(0.95, 0.45, 0.15, 0.95)
+
+[sub_resource type="QuadMesh" id="QuadMesh_bar_fill"]
+material = SubResource("StandardMaterial3D_bar_fill")
+size = Vector2(0.86, 0.08)
+
+[node name="SkeletonRogue" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 5
+input_ray_pickable = true
+script = ExtResource("1_enemy")
+EnemyName = "Скелет-асасин Катакомб"
+MoveSpeed = 4.3
+AggroRange = 9.5
+AttackRange = 1.6
+AttackDamage = 11
+MaxHealth = 42
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_skeleton")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+path_desired_distance = 0.5
+target_desired_distance = 0.5
+path_max_distance = 3.0
+max_speed = 4.3
+
+[node name="skeleton_rogue" parent="." instance=ExtResource("2_skeleton")]
+
+[node name="HealthBar" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+
+[node name="BarBg" type="MeshInstance3D" parent="HealthBar"]
+mesh = SubResource("QuadMesh_bar_bg")
+
+[node name="BarFillAnchor" type="Node3D" parent="HealthBar"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.43, 0, 0.005)
+
+[node name="BarFill" type="MeshInstance3D" parent="HealthBar/BarFillAnchor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.43, 0, 0)
+mesh = SubResource("QuadMesh_bar_fill")

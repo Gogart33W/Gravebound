@@ -61,6 +61,7 @@ ring_segments = 16
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_manager")
+NextScenePath = "res://scenes/Catacombs.tscn"
 
 [node name="SoundManager" type="Node" parent="."]
 script = ExtResource("8_sound")
