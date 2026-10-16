@@ -68,13 +68,32 @@ public partial class GraveboundHUD : CanvasLayer
     private Label? _lootToastLabel;
     private float _lootToastTimer;
 
+    // Shop UI
+    private PanelContainer? _shopModal;
+    private Label? _shopTitleLabel;
+    private Label? _shopGoldLabel;
+    private Label? _greetingLabel;
+    private VBoxContainer? _playerItemsList;
+    private VBoxContainer? _waresList;
+    private Button? _shopCloseButton;
+    private System.Collections.Generic.List<ItemData> _currentShopWares = new();
+
+    // Waypoint UI
+    private PanelContainer? _waypointModal;
+    private Button? _destHubBtn;
+    private Button? _destCryptBtn;
+    private Button? _destCatacombsBtn;
+    private Button? _waypointCloseButton;
+
     [Signal] public delegate void ContinuePressedEventHandler();
 
     public bool IsModalOpen =>
         (_loreModal != null && _loreModal.Visible) ||
         (_victoryModal != null && _victoryModal.Visible) ||
         (_inventoryModal != null && _inventoryModal.Visible) ||
-        (_characterModal != null && _characterModal.Visible);
+        (_characterModal != null && _characterModal.Visible) ||
+        (_shopModal != null && _shopModal.Visible) ||
+        (_waypointModal != null && _waypointModal.Visible);
 
     public override void _EnterTree()
     {
@@ -147,13 +166,74 @@ public partial class GraveboundHUD : CanvasLayer
         _combatArmorLabel = GetNodeOrNull<Label>("Control/Center/CharacterModal/VBox/CombatSummaryVBox/CombatArmor");
         _combatHealthLabel = GetNodeOrNull<Label>("Control/Center/CharacterModal/VBox/CombatSummaryVBox/CombatHealth");
 
+        // Shop nodes
+        _shopModal = GetNodeOrNull<PanelContainer>("Control/Center/ShopModal");
+        _shopTitleLabel = GetNodeOrNull<Label>("Control/Center/ShopModal/VBox/HeaderHBox/ShopTitle");
+        _shopGoldLabel = GetNodeOrNull<Label>("Control/Center/ShopModal/VBox/HeaderHBox/ShopGoldLabel");
+        _greetingLabel = GetNodeOrNull<Label>("Control/Center/ShopModal/VBox/GreetingLabel");
+        _playerItemsList = GetNodeOrNull<VBoxContainer>("Control/Center/ShopModal/VBox/ContentHBox/PlayerBagVBox/PlayerScroll/PlayerItemsList");
+        _waresList = GetNodeOrNull<VBoxContainer>("Control/Center/ShopModal/VBox/ContentHBox/MerchantWaresVBox/WaresScroll/WaresList");
+        _shopCloseButton = GetNodeOrNull<Button>("Control/Center/ShopModal/VBox/ShopCloseButton");
+
+        // Waypoint nodes
+        _waypointModal = GetNodeOrNull<PanelContainer>("Control/Center/WaypointModal");
+        _destHubBtn = GetNodeOrNull<Button>("Control/Center/WaypointModal/VBox/DestHubBtn");
+        _destCryptBtn = GetNodeOrNull<Button>("Control/Center/WaypointModal/VBox/DestCryptBtn");
+        _destCatacombsBtn = GetNodeOrNull<Button>("Control/Center/WaypointModal/VBox/DestCatacombsBtn");
+        _waypointCloseButton = GetNodeOrNull<Button>("Control/Center/WaypointModal/VBox/WaypointCloseButton");
+
         if (_loreModal != null) _loreModal.Visible = false;
         if (_deathScreen != null) _deathScreen.Visible = false;
         if (_targetBarBox != null) _targetBarBox.Visible = false;
         if (_victoryModal != null) _victoryModal.Visible = false;
         if (_inventoryModal != null) _inventoryModal.Visible = false;
         if (_characterModal != null) _characterModal.Visible = false;
+        if (_shopModal != null) _shopModal.Visible = false;
+        if (_waypointModal != null) _waypointModal.Visible = false;
         if (_lootToastLabel != null) _lootToastLabel.Visible = false;
+
+        if (_shopCloseButton != null)
+        {
+            _shopCloseButton.Pressed += () =>
+            {
+                if (_shopModal != null) _shopModal.Visible = false;
+            };
+        }
+
+        if (_waypointCloseButton != null)
+        {
+            _waypointCloseButton.Pressed += () =>
+            {
+                if (_waypointModal != null) _waypointModal.Visible = false;
+            };
+        }
+
+        if (_destHubBtn != null)
+        {
+            _destHubBtn.Pressed += () =>
+            {
+                if (_waypointModal != null) _waypointModal.Visible = false;
+                GetTree().ChangeSceneToFile("res://scenes/HubTown.tscn");
+            };
+        }
+
+        if (_destCryptBtn != null)
+        {
+            _destCryptBtn.Pressed += () =>
+            {
+                if (_waypointModal != null) _waypointModal.Visible = false;
+                GetTree().ChangeSceneToFile("res://scenes/Main.tscn");
+            };
+        }
+
+        if (_destCatacombsBtn != null)
+        {
+            _destCatacombsBtn.Pressed += () =>
+            {
+                if (_waypointModal != null) _waypointModal.Visible = false;
+                GetTree().ChangeSceneToFile("res://scenes/Catacombs.tscn");
+            };
+        }
 
         if (_loreCloseButton != null)
         {
@@ -457,6 +537,10 @@ public partial class GraveboundHUD : CanvasLayer
         {
             _goldLabel.Text = $"💰 {amount} Золота";
         }
+        if (_shopGoldLabel != null)
+        {
+            _shopGoldLabel.Text = $"💰 {amount} Золота";
+        }
     }
 
     public void OnItemPickedUp(string name, string colorHex)
@@ -535,6 +619,20 @@ public partial class GraveboundHUD : CanvasLayer
 
         if (@event.IsActionPressed("ui_cancel"))
         {
+            if (_shopModal != null && _shopModal.Visible)
+            {
+                _shopModal.Visible = false;
+                GetViewport().SetInputAsHandled();
+                return;
+            }
+
+            if (_waypointModal != null && _waypointModal.Visible)
+            {
+                _waypointModal.Visible = false;
+                GetViewport().SetInputAsHandled();
+                return;
+            }
+
             if (_characterModal != null && _characterModal.Visible)
             {
                 _characterModal.Visible = false;
@@ -556,6 +654,126 @@ public partial class GraveboundHUD : CanvasLayer
                 return;
             }
         }
+    }
+
+    public void OpenShop(string npcName, string role, string greeting, System.Collections.Generic.List<ItemData> wares)
+    {
+        if (_inventoryModal != null) _inventoryModal.Visible = false;
+        if (_characterModal != null) _characterModal.Visible = false;
+        if (_loreModal != null) _loreModal.Visible = false;
+        if (_waypointModal != null) _waypointModal.Visible = false;
+
+        _currentShopWares = wares;
+        if (_shopTitleLabel != null) _shopTitleLabel.Text = $"🏪 {npcName.ToUpper()} — {role}";
+        if (_greetingLabel != null) _greetingLabel.Text = greeting;
+
+        RefreshShopUI();
+
+        if (_shopModal != null) _shopModal.Visible = true;
+    }
+
+    public void RefreshShopUI()
+    {
+        var inv = InventoryManager.Instance;
+        if (inv == null) return;
+
+        if (_shopGoldLabel != null)
+        {
+            _shopGoldLabel.Text = $"💰 {inv.Gold} Золота";
+        }
+
+        // Render player items for sale
+        if (_playerItemsList != null)
+        {
+            foreach (Node child in _playerItemsList.GetChildren())
+            {
+                child.QueueFree();
+            }
+
+            bool hasAny = false;
+            for (int i = 0; i < InventoryManager.MaxSlots; i++)
+            {
+                int slotIdx = i;
+                var item = inv.Slots[slotIdx];
+                if (item == null) continue;
+                hasAny = true;
+
+                int sellPrice = Mathf.Max(1, item.ValueGold / 2);
+                var btn = new Button();
+                btn.CustomMinimumSize = new Vector2(0, 32);
+                btn.AddThemeFontSizeOverride("font_size", 12);
+                btn.AddThemeColorOverride("font_color", item.GetRarityColor());
+                btn.Text = $"{item.ItemName} (+{sellPrice} 💰)";
+                btn.TooltipText = $"{item.Description}\n{item.GetFormattedStats()}\nЦіна продажу: {sellPrice} золота";
+                btn.Pressed += () =>
+                {
+                    inv.RemoveItem(slotIdx);
+                    inv.AddGold(sellPrice);
+                    Audio.SoundManager.Instance?.PlayAltarChime();
+                    ShowToast($"Продано: {item.ItemName} (+{sellPrice} 💰)", new Color(1f, 0.85f, 0.3f));
+                    RefreshShopUI();
+                };
+                _playerItemsList.AddChild(btn);
+            }
+
+            if (!hasAny)
+            {
+                var emptyLbl = new Label();
+                emptyLbl.Text = "(Сумка порожня)";
+                emptyLbl.Modulate = new Color(0.6f, 0.6f, 0.6f);
+                _playerItemsList.AddChild(emptyLbl);
+            }
+        }
+
+        // Render merchant wares
+        if (_waresList != null)
+        {
+            foreach (Node child in _waresList.GetChildren())
+            {
+                child.QueueFree();
+            }
+
+            foreach (var ware in _currentShopWares)
+            {
+                var item = ware;
+                var btn = new Button();
+                btn.CustomMinimumSize = new Vector2(0, 32);
+                btn.AddThemeFontSizeOverride("font_size", 12);
+                btn.AddThemeColorOverride("font_color", item.GetRarityColor());
+                btn.Text = $"{item.ItemName} ({item.ValueGold} 💰)";
+                btn.TooltipText = $"{item.Description}\n{item.GetFormattedStats()}\nЦіна купівлі: {item.ValueGold} золота";
+                btn.Pressed += () =>
+                {
+                    if (inv.Gold < item.ValueGold)
+                    {
+                        ShowToast("Недостатньо золота для покупки!", new Color(1f, 0.3f, 0.3f));
+                        return;
+                    }
+                    if (!inv.HasFreeSlot())
+                    {
+                        ShowToast("Ваша сумка переповнена (20/20)!", new Color(1f, 0.3f, 0.3f));
+                        return;
+                    }
+
+                    inv.AddGold(-item.ValueGold);
+                    inv.AddItem(item.Clone());
+                    Audio.SoundManager.Instance?.PlayAltarChime();
+                    ShowToast($"Придбано: {item.ItemName} (-{item.ValueGold} 💰)", new Color(0.35f, 1f, 0.6f));
+                    RefreshShopUI();
+                };
+                _waresList.AddChild(btn);
+            }
+        }
+    }
+
+    public void OpenWaypointModal()
+    {
+        if (_inventoryModal != null) _inventoryModal.Visible = false;
+        if (_characterModal != null) _characterModal.Visible = false;
+        if (_loreModal != null) _loreModal.Visible = false;
+        if (_shopModal != null) _shopModal.Visible = false;
+
+        if (_waypointModal != null) _waypointModal.Visible = true;
     }
 
     private void OnPlayerDied()

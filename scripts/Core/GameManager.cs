@@ -20,6 +20,10 @@ public partial class GameManager : Node3D
     /// <summary>Scene loaded when the player confirms the victory window. Empty = just close the window.</summary>
     [Export(PropertyHint.File, "*.tscn")] public string NextScenePath { get; set; } = "";
 
+    [Export] public bool IsHubTown { get; set; } = false;
+    [Export(PropertyHint.MultilineText)]
+    public string HubQuestObjective { get; set; } = "• Торгуйте з Ковалем Бранном та Алхіміком Селеною\n• Використайте Обеліск для подорожі у склеп";
+
     private GraveboundHUD? _hud;
     private CryptAltar? _altar;
     private int _skeletonsDefeated = 0;
@@ -75,6 +79,12 @@ public partial class GameManager : Node3D
     private void UpdateQuestState()
     {
         if (_hud == null) return;
+
+        if (IsHubTown)
+        {
+            _hud.UpdateQuest(ChapterTitle, HubQuestObjective);
+            return;
+        }
 
         if (_skeletonsDefeated >= _skeletonGoal && _altarInspected)
         {

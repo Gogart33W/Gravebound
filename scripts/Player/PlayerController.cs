@@ -6,6 +6,7 @@ using Gravebound.Enemies;
 using Gravebound.Environment;
 using Gravebound.UI;
 using Gravebound.Inventory;
+using Gravebound.NPC;
 
 namespace Gravebound.Player;
 
@@ -121,6 +122,13 @@ public partial class PlayerController : CharacterBody3D
             InputMap.ActionAddEvent("toggle_character_stats", keyC);
         }
 
+        if (!InputMap.HasAction("town_portal"))
+        {
+            InputMap.AddAction("town_portal");
+            var keyT = new InputEventKey { Keycode = Key.T, PhysicalKeycode = Key.T };
+            InputMap.ActionAddEvent("town_portal", keyT);
+        }
+
         Callable.From(ActorSetup).CallDeferred();
         PlayAnimation("Idle");
     }
@@ -145,8 +153,22 @@ public partial class PlayerController : CharacterBody3D
         return null;
     }
 
+    public void CastTownPortal()
+    {
+        if (_isDead) return;
+        SoundManager.Instance?.PlayAltarChime();
+        GetTree().ChangeSceneToFile("res://scenes/HubTown.tscn");
+    }
+
     public override void _Input(InputEvent @event)
     {
+        if (@event.IsActionPressed("town_portal"))
+        {
+            CastTownPortal();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
         if (@event.IsActionPressed("toggle_inventory"))
         {
             GraveboundHUD.Instance?.ToggleInventory();
@@ -298,6 +320,22 @@ public partial class PlayerController : CharacterBody3D
                 _targetAltar = null;
                 _targetEnemy = null;
                 MoveTo(worldItem.GlobalPosition, showMarker: !isDragging);
+                return;
+            }
+
+            if (collider is MerchantNPC merchant)
+            {
+                _targetAltar = null;
+                _targetEnemy = null;
+                MoveTo(merchant.GlobalPosition, showMarker: !isDragging);
+                return;
+            }
+
+            if (collider is WaypointStone waypoint)
+            {
+                _targetAltar = null;
+                _targetEnemy = null;
+                MoveTo(waypoint.GlobalPosition, showMarker: !isDragging);
                 return;
             }
         }

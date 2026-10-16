@@ -1,0 +1,210 @@
+[gd_scene load_steps=22 format=3]
+
+[ext_resource type="Script" path="res://scripts/Core/GameManager.cs" id="1_manager"]
+[ext_resource type="PackedScene" path="res://assets/models/environment/crypt_arena.glb" id="2_arena"]
+[ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="3_player"]
+[ext_resource type="Script" path="res://scripts/Camera/IsometricCamera.cs" id="4_camera"]
+[ext_resource type="PackedScene" path="res://scenes/HUD.tscn" id="5_hud"]
+[ext_resource type="NavigationMesh" path="res://assets/models/environment/crypt_navmesh.tres" id="6_navmesh"]
+[ext_resource type="Script" path="res://scripts/Audio/SoundManager.cs" id="7_sound"]
+[ext_resource type="Script" path="res://scripts/Inventory/InventoryManager.cs" id="8_inventory"]
+[ext_resource type="Script" path="res://scripts/Player/PlayerProgression.cs" id="9_progression"]
+[ext_resource type="Script" path="res://scripts/NPC/MerchantNPC.cs" id="10_merchant"]
+[ext_resource type="Script" path="res://scripts/Environment/WaypointStone.cs" id="11_waypoint"]
+[ext_resource type="PackedScene" path="res://assets/models/characters/Barbarian.glb" id="12_barbarian"]
+[ext_resource type="PackedScene" path="res://assets/models/characters/warrior.glb" id="13_warrior"]
+
+[sub_resource type="Environment" id="Environment_hub"]
+background_mode = 1
+background_color = Color(0.04, 0.03, 0.02, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.38, 0.28, 0.2, 1)
+ambient_light_energy = 0.95
+tonemap_mode = 3
+glow_enabled = true
+glow_intensity = 0.75
+glow_bloom = 0.22
+fog_enabled = true
+fog_light_color = Color(0.18, 0.12, 0.08, 1)
+fog_density = 0.012
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_npc"]
+height = 2.2
+radius = 1.8
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_waypoint"]
+height = 2.8
+radius = 2.2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_obelisk"]
+albedo_color = Color(0.15, 0.2, 0.28, 1)
+roughness = 0.6
+emission_enabled = true
+emission = Color(0.2, 0.7, 0.9, 1)
+emission_energy_multiplier = 0.5
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_obelisk"]
+material = SubResource("StandardMaterial3D_obelisk")
+top_radius = 0.35
+bottom_radius = 0.7
+height = 2.6
+radial_segments = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fire"]
+shading_mode = 0
+albedo_color = Color(1, 0.65, 0.15, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_fire"]
+material = SubResource("StandardMaterial3D_fire")
+top_radius = 0.2
+bottom_radius = 0.6
+height = 0.5
+
+[node name="HubTown" type="Node3D"]
+script = ExtResource("1_manager")
+ChapterTitle = "Табір: Притулок Останньої Варти"
+IsHubTown = true
+HubQuestObjective = "• Торгуйте з Ковалем Бранном та Алхіміком Селеною\n• Використайте Обеліск швидкого переміщення [E]\n• Натисніть [T], щоб повернутися сюди з будь-якого місця"
+
+[node name="SoundManager" type="Node" parent="."]
+script = ExtResource("7_sound")
+
+[node name="InventoryManager" type="Node" parent="."]
+script = ExtResource("8_inventory")
+
+[node name="PlayerProgression" type="Node" parent="."]
+script = ExtResource("9_progression")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_hub")
+
+[node name="WarmMoonlight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.25, 0.433013, 0, 0.866025, 0.5, -0.5, -0.433013, 0.75, 0, 15, 0)
+light_color = Color(0.95, 0.84, 0.7, 1)
+light_energy = 0.9
+shadow_enabled = true
+
+[node name="Campfire" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+
+[node name="CampfireMesh" type="MeshInstance3D" parent="Campfire"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+mesh = SubResource("CylinderMesh_fire")
+
+[node name="CampfireLight" type="OmniLight3D" parent="Campfire"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+light_color = Color(1, 0.55, 0.15, 1)
+light_energy = 3.6
+omni_range = 12.0
+omni_attenuation = 1.3
+
+[node name="BlacksmithBrann" type="Area3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -5.2, 0.2, 0)
+collision_layer = 8
+collision_mask = 2
+script = ExtResource("10_merchant")
+NPCName = "Коваль Бранн"
+NPCRole = "Зброяр Вартових"
+Greeting = "«Вітаю тебе, Могилонароджений. Мій молот ще пам'ятає, як кувати сталь проти скверни Мор-Гула. Поглянь на мої клинки та міцні лати...»"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BlacksmithBrann"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+shape = SubResource("CylinderShape3D_npc")
+
+[node name="Barbarian" parent="BlacksmithBrann" instance=ExtResource("12_barbarian")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="NameLabel" type="Label3D" parent="BlacksmithBrann"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4, 0)
+billboard = 1
+no_depth_test = true
+text = "[Зброяр Вартових]\nКоваль Бранн\n[E: Торгівля]"
+font_size = 38
+outline_size = 6
+outline_modulate = Color(0.05, 0.05, 0.05, 1)
+modulate = Color(1, 0.85, 0.4, 1)
+
+[node name="Glow" type="OmniLight3D" parent="BlacksmithBrann"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+light_color = Color(1, 0.55, 0.15, 1)
+light_energy = 2.2
+omni_range = 7.0
+
+[node name="AlchemistSelena" type="Area3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.2, 0.2, 0)
+collision_layer = 8
+collision_mask = 2
+script = ExtResource("10_merchant")
+NPCName = "Алхімік Селена"
+NPCRole = "Травниця та Зіллярка"
+Greeting = "«Ти повернувся живим із глибин... Візьми мої цілющі зілля та чарівні персні — вони збережуть твоє життя від прокляття попелу.»"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AlchemistSelena"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+shape = SubResource("CylinderShape3D_npc")
+
+[node name="Warrior" parent="AlchemistSelena" instance=ExtResource("13_warrior")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="NameLabel" type="Label3D" parent="AlchemistSelena"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4, 0)
+billboard = 1
+no_depth_test = true
+text = "[Травниця та Зіллярка]\nАлхімік Селена\n[E: Торгівля]"
+font_size = 38
+outline_size = 6
+outline_modulate = Color(0.05, 0.05, 0.05, 1)
+modulate = Color(0.4, 0.95, 0.6, 1)
+
+[node name="Glow" type="OmniLight3D" parent="AlchemistSelena"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+light_color = Color(0.2, 0.95, 0.6, 1)
+light_energy = 2.2
+omni_range = 7.0
+
+[node name="WaypointStone" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, -6.5)
+collision_layer = 8
+collision_mask = 2
+script = ExtResource("11_waypoint")
+WaypointName = "Притулок Останньої Варти"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WaypointStone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+shape = SubResource("CylinderShape3D_waypoint")
+
+[node name="ObeliskMesh" type="MeshInstance3D" parent="WaypointStone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
+mesh = SubResource("CylinderMesh_obelisk")
+
+[node name="Glow" type="OmniLight3D" parent="WaypointStone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 0)
+light_color = Color(0.3, 0.85, 1, 1)
+light_energy = 3.5
+omni_range = 9.0
+
+[node name="Label3D" type="Label3D" parent="WaypointStone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.2, 0)
+billboard = 1
+no_depth_test = true
+text = "✦ ОБЕЛІСК ПЕРЕМІЩЕННЯ ✦\n[E: Швидке переміщення]"
+font_size = 42
+outline_size = 6
+outline_modulate = Color(0.05, 0.05, 0.05, 1)
+modulate = Color(0.35, 0.9, 1, 1)
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+navigation_mesh = ExtResource("6_navmesh")
+
+[node name="crypt_arena" parent="NavigationRegion3D" instance=ExtResource("2_arena")]
+
+[node name="Player" parent="." instance=ExtResource("3_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 4.5)
+
+[node name="IsometricCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 14, 21.5)
+current = true
+fov = 42.0
+script = ExtResource("4_camera")
+
+[node name="HUD" parent="." instance=ExtResource("5_hud")]

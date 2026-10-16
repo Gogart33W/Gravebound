@@ -71,6 +71,15 @@ public partial class InventoryManager : Node
         }
     }
 
+    public bool HasFreeSlot()
+    {
+        for (int i = 0; i < MaxSlots; i++)
+        {
+            if (Slots[i] == null) return true;
+        }
+        return false;
+    }
+
     public bool AddItem(ItemData item)
     {
         for (int i = 0; i < MaxSlots; i++)

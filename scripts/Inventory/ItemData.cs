@@ -59,6 +59,22 @@ public partial class ItemData : Resource
         return string.Join(" | ", parts);
     }
 
+    public ItemData Clone()
+    {
+        return new ItemData
+        {
+            Id = Id,
+            ItemName = ItemName,
+            Description = Description,
+            Rarity = Rarity,
+            SlotType = SlotType,
+            BonusHealth = BonusHealth,
+            BonusDamage = BonusDamage,
+            BonusArmor = BonusArmor,
+            ValueGold = ValueGold
+        };
+    }
+
     public static ItemData CreateRandomDrop(bool isBoss)
     {
         int roll = GD.RandRange(0, 100);

@@ -674,6 +674,170 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "ЗАКРИТИ (C / Esc)"
 
+[node name="ShopModal" type="PanelContainer" parent="Control/Center"]
+visible = false
+custom_minimum_size = Vector2(720, 500)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_lore")
+
+[node name="VBox" type="VBoxContainer" parent="Control/Center/ShopModal"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderHBox" type="HBoxContainer" parent="Control/Center/ShopModal/VBox"]
+layout_mode = 2
+
+[node name="ShopTitle" type="Label" parent="Control/Center/ShopModal/VBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.82, 0.45, 1)
+theme_override_font_sizes/font_size = 18
+text = "🏪 КОВАЛЬ БРАНН — Зброяр Вартових"
+
+[node name="ShopGoldLabel" type="Label" parent="Control/Center/ShopModal/VBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.25, 1)
+theme_override_font_sizes/font_size = 15
+text = "💰 60 Золота"
+
+[node name="GreetingLabel" type="Label" parent="Control/Center/ShopModal/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.8, 1)
+theme_override_font_sizes/font_size = 12
+text = "«Вітаю тебе, Могилонароджений...»"
+autowrap_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="Control/Center/ShopModal/VBox"]
+layout_mode = 2
+
+[node name="ContentHBox" type="HBoxContainer" parent="Control/Center/ShopModal/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="PlayerBagVBox" type="VBoxContainer" parent="Control/Center/ShopModal/VBox/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="PlayerBagTitle" type="Label" parent="Control/Center/ShopModal/VBox/ContentHBox/PlayerBagVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.75, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+text = "ВАША СУМКА (Клік: продати):"
+
+[node name="PlayerScroll" type="ScrollContainer" parent="Control/Center/ShopModal/VBox/ContentHBox/PlayerBagVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PlayerItemsList" type="VBoxContainer" parent="Control/Center/ShopModal/VBox/ContentHBox/PlayerBagVBox/PlayerScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="VSeparator" type="VSeparator" parent="Control/Center/ShopModal/VBox/ContentHBox"]
+layout_mode = 2
+
+[node name="MerchantWaresVBox" type="VBoxContainer" parent="Control/Center/ShopModal/VBox/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="WaresTitle" type="Label" parent="Control/Center/ShopModal/VBox/ContentHBox/MerchantWaresVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.75, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+text = "ТОВАРИ КУПЦЯ (Клік: купити):"
+
+[node name="WaresScroll" type="ScrollContainer" parent="Control/Center/ShopModal/VBox/ContentHBox/MerchantWaresVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="WaresList" type="VBoxContainer" parent="Control/Center/ShopModal/VBox/ContentHBox/MerchantWaresVBox/WaresScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="HSeparator2" type="HSeparator" parent="Control/Center/ShopModal/VBox"]
+layout_mode = 2
+
+[node name="ShopCloseButton" type="Button" parent="Control/Center/ShopModal/VBox"]
+custom_minimum_size = Vector2(220, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.95, 0.85, 0.6, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "ЗАКРИТИ ТОРГІВЛЮ (Esc)"
+
+[node name="WaypointModal" type="PanelContainer" parent="Control/Center"]
+visible = false
+custom_minimum_size = Vector2(500, 320)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_lore")
+
+[node name="VBox" type="VBoxContainer" parent="Control/Center/WaypointModal"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Control/Center/WaypointModal/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.9, 1.0, 1)
+theme_override_font_sizes/font_size = 19
+text = "✦ ОБЕЛІСК ПЕРЕМІЩЕННЯ ✦"
+horizontal_alignment = 1
+
+[node name="Sub" type="Label" parent="Control/Center/WaypointModal/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_font_sizes/font_size = 13
+text = "Оберіть точку призначення у Валґарді:"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Control/Center/WaypointModal/VBox"]
+layout_mode = 2
+
+[node name="DestHubBtn" type="Button" parent="Control/Center/WaypointModal/VBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 1.0, 0.7, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🏕️ Притулок Останньої Варти (Безпечний Хаб)"
+
+[node name="DestCryptBtn" type="Button" parent="Control/Center/WaypointModal/VBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.85, 0.6, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "💀 Розділ I: Забута Крипта (Вартові Склепу)"
+
+[node name="DestCatacombsBtn" type="Button" parent="Control/Center/WaypointModal/VBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.35, 0.95, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🩸 Розділ II: Катакомби Мор-Гула (Архімаг)"
+
+[node name="HSeparator2" type="HSeparator" parent="Control/Center/WaypointModal/VBox"]
+layout_mode = 2
+
+[node name="WaypointCloseButton" type="Button" parent="Control/Center/WaypointModal/VBox"]
+custom_minimum_size = Vector2(180, 30)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "ЗАКРИТИ (Esc)"
+
 [node name="DeathScreen" type="CenterContainer" parent="Control"]
 visible = false
 layout_mode = 1
