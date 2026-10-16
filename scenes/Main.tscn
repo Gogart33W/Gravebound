@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://scripts/Environment/CryptAltar.cs" id="9_altar"]
 [ext_resource type="Script" path="res://scripts/Environment/CatacombsPortal.cs" id="10_portal"]
 [ext_resource type="Script" path="res://scripts/Inventory/InventoryManager.cs" id="11_inventory"]
+[ext_resource type="Script" path="res://scripts/Player/PlayerProgression.cs" id="12_progression"]
 
 [sub_resource type="Environment" id="Environment_crypt"]
 background_mode = 1
@@ -69,6 +70,9 @@ script = ExtResource("8_sound")
 
 [node name="InventoryManager" type="Node" parent="."]
 script = ExtResource("11_inventory")
+
+[node name="PlayerProgression" type="Node" parent="."]
+script = ExtResource("12_progression")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_crypt")

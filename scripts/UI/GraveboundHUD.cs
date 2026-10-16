@@ -39,6 +39,26 @@ public partial class GraveboundHUD : CanvasLayer
     private Button? _shieldSlotBtn;
     private Button? _ringSlotBtn;
 
+    // Character Progression & Stats UI
+    private PanelContainer? _characterModal;
+    private Button? _characterButton;
+    private Button? _characterCloseButton;
+    private Label? _levelBadgeLabel;
+    private Label? _xpLabel;
+    private ProgressBar? _xpBar;
+    private Label? _pointsLabel;
+    private Label? _strengthLabel;
+    private Button? _strengthPlusBtn;
+    private Label? _agilityLabel;
+    private Button? _agilityPlusBtn;
+    private Label? _vitalityLabel;
+    private Button? _vitalityPlusBtn;
+    private Label? _willpowerLabel;
+    private Button? _willpowerPlusBtn;
+    private Label? _combatDamageLabel;
+    private Label? _combatArmorLabel;
+    private Label? _combatHealthLabel;
+
     // Top Target Health Bar & Loot Notification
     private PanelContainer? _targetBarBox;
     private ProgressBar? _targetHealthBar;
@@ -53,7 +73,8 @@ public partial class GraveboundHUD : CanvasLayer
     public bool IsModalOpen =>
         (_loreModal != null && _loreModal.Visible) ||
         (_victoryModal != null && _victoryModal.Visible) ||
-        (_inventoryModal != null && _inventoryModal.Visible);
+        (_inventoryModal != null && _inventoryModal.Visible) ||
+        (_characterModal != null && _characterModal.Visible);
 
     public override void _EnterTree()
     {
@@ -72,7 +93,8 @@ public partial class GraveboundHUD : CanvasLayer
     {
         _healthBar = GetNodeOrNull<ProgressBar>("Control/BottomBar/HealthBar");
         _healthLabel = GetNodeOrNull<Label>("Control/BottomBar/HealthBar/HealthLabel");
-        _inventoryButton = GetNodeOrNull<Button>("Control/BottomBar/InventoryButton");
+        _inventoryButton = GetNodeOrNull<Button>("Control/BottomBar/ButtonsHBox/InventoryButton");
+        _characterButton = GetNodeOrNull<Button>("Control/BottomBar/ButtonsHBox/CharacterButton");
         _questTitleLabel = GetNodeOrNull<Label>("Control/TopRight/QuestBox/VBox/QuestTitle");
         _questObjectiveLabel = GetNodeOrNull<Label>("Control/TopRight/QuestBox/VBox/QuestObjective");
         _loreModal = GetNodeOrNull<PanelContainer>("Control/Center/LoreModal");
@@ -106,11 +128,31 @@ public partial class GraveboundHUD : CanvasLayer
         _bagGrid = GetNodeOrNull<GridContainer>("Control/Center/InventoryModal/VBox/ContentHBox/BagVBox/Grid");
         _detailLabel = GetNodeOrNull<Label>("Control/Center/InventoryModal/VBox/ContentHBox/BagVBox/ItemDetailPanel/DetailLabel");
 
+        // Character Progression nodes
+        _characterModal = GetNodeOrNull<PanelContainer>("Control/Center/CharacterModal");
+        _characterCloseButton = GetNodeOrNull<Button>("Control/Center/CharacterModal/VBox/CloseButton");
+        _levelBadgeLabel = GetNodeOrNull<Label>("Control/Center/CharacterModal/VBox/HeaderHBox/LevelBadge");
+        _xpLabel = GetNodeOrNull<Label>("Control/Center/CharacterModal/VBox/XpBox/XpLabel");
+        _xpBar = GetNodeOrNull<ProgressBar>("Control/Center/CharacterModal/VBox/XpBox/XpBar");
+        _pointsLabel = GetNodeOrNull<Label>("Control/Center/CharacterModal/VBox/PointsLabel");
+        _strengthLabel = GetNodeOrNull<Label>("Control/Center/CharacterModal/VBox/AttributesVBox/StrengthHBox/StrengthLabel");
+        _strengthPlusBtn = GetNodeOrNull<Button>("Control/Center/CharacterModal/VBox/AttributesVBox/StrengthHBox/StrengthPlusBtn");
+        _agilityLabel = GetNodeOrNull<Label>("Control/Center/CharacterModal/VBox/AttributesVBox/AgilityHBox/AgilityLabel");
+        _agilityPlusBtn = GetNodeOrNull<Button>("Control/Center/CharacterModal/VBox/AttributesVBox/AgilityHBox/AgilityPlusBtn");
+        _vitalityLabel = GetNodeOrNull<Label>("Control/Center/CharacterModal/VBox/AttributesVBox/VitalityHBox/VitalityLabel");
+        _vitalityPlusBtn = GetNodeOrNull<Button>("Control/Center/CharacterModal/VBox/AttributesVBox/VitalityHBox/VitalityPlusBtn");
+        _willpowerLabel = GetNodeOrNull<Label>("Control/Center/CharacterModal/VBox/AttributesVBox/WillpowerHBox/WillpowerLabel");
+        _willpowerPlusBtn = GetNodeOrNull<Button>("Control/Center/CharacterModal/VBox/AttributesVBox/WillpowerHBox/WillpowerPlusBtn");
+        _combatDamageLabel = GetNodeOrNull<Label>("Control/Center/CharacterModal/VBox/CombatSummaryVBox/CombatDamage");
+        _combatArmorLabel = GetNodeOrNull<Label>("Control/Center/CharacterModal/VBox/CombatSummaryVBox/CombatArmor");
+        _combatHealthLabel = GetNodeOrNull<Label>("Control/Center/CharacterModal/VBox/CombatSummaryVBox/CombatHealth");
+
         if (_loreModal != null) _loreModal.Visible = false;
         if (_deathScreen != null) _deathScreen.Visible = false;
         if (_targetBarBox != null) _targetBarBox.Visible = false;
         if (_victoryModal != null) _victoryModal.Visible = false;
         if (_inventoryModal != null) _inventoryModal.Visible = false;
+        if (_characterModal != null) _characterModal.Visible = false;
         if (_lootToastLabel != null) _lootToastLabel.Visible = false;
 
         if (_loreCloseButton != null)
@@ -134,6 +176,19 @@ public partial class GraveboundHUD : CanvasLayer
             };
         }
 
+        if (_characterButton != null)
+        {
+            _characterButton.Pressed += ToggleCharacterStats;
+        }
+
+        if (_characterCloseButton != null)
+        {
+            _characterCloseButton.Pressed += () =>
+            {
+                if (_characterModal != null) _characterModal.Visible = false;
+            };
+        }
+
         if (_victoryContinueButton != null)
         {
             _victoryContinueButton.Pressed += () =>
@@ -142,6 +197,12 @@ public partial class GraveboundHUD : CanvasLayer
                 EmitSignal(SignalName.ContinuePressed);
             };
         }
+
+        // Stat plus buttons
+        if (_strengthPlusBtn != null) _strengthPlusBtn.Pressed += () => PlayerProgression.Instance?.AllocatePoint("strength");
+        if (_agilityPlusBtn != null) _agilityPlusBtn.Pressed += () => PlayerProgression.Instance?.AllocatePoint("agility");
+        if (_vitalityPlusBtn != null) _vitalityPlusBtn.Pressed += () => PlayerProgression.Instance?.AllocatePoint("vitality");
+        if (_willpowerPlusBtn != null) _willpowerPlusBtn.Pressed += () => PlayerProgression.Instance?.AllocatePoint("willpower");
 
         // Equipment slot unequip clicks
         if (_headSlotBtn != null) _headSlotBtn.Pressed += () => InventoryManager.Instance?.UnequipItem(ItemSlotType.Head);
@@ -162,20 +223,31 @@ public partial class GraveboundHUD : CanvasLayer
             OnHealthChanged(player.CurrentHealth, player.GetTotalMaxHealth());
         }
 
-        // Hook InventoryManager signals
-        Callable.From(HookInventory).CallDeferred();
+        // Hook Singletons deferred
+        Callable.From(HookSingletons).CallDeferred();
     }
 
-    private void HookInventory()
+    private void HookSingletons()
     {
         var inv = InventoryManager.Instance;
         if (inv != null)
         {
             inv.InventoryChanged += RefreshInventoryUI;
             inv.EquipmentChanged += RefreshInventoryUI;
+            inv.EquipmentChanged += RefreshCharacterStatsUI;
             inv.GoldChanged += (gold) => UpdateGold(gold);
             inv.ItemPickedUp += OnItemPickedUp;
             UpdateGold(inv.Gold);
+        }
+
+        var prog = PlayerProgression.Instance;
+        if (prog != null)
+        {
+            prog.XPChanged += (cur, req, lvl) => RefreshXP(cur, req, lvl);
+            prog.LevelUp += (lvl) => OnLevelUp(lvl);
+            prog.StatsChanged += RefreshCharacterStatsUI;
+            prog.StatsChanged += RefreshInventoryUI;
+            RefreshXP(prog.CurrentXP, prog.XPRequiredForNextLevel, prog.Level);
         }
     }
 
@@ -183,13 +255,11 @@ public partial class GraveboundHUD : CanvasLayer
     {
         if (_bagGrid == null) return;
 
-        // Clear existing children
         foreach (Node child in _bagGrid.GetChildren())
         {
             child.QueueFree();
         }
 
-        // Create 20 slot buttons
         for (int i = 0; i < InventoryManager.MaxSlots; i++)
         {
             int slotIdx = i;
@@ -213,7 +283,85 @@ public partial class GraveboundHUD : CanvasLayer
         _inventoryModal.Visible = !_inventoryModal.Visible;
         if (_inventoryModal.Visible)
         {
+            if (_characterModal != null) _characterModal.Visible = false;
             RefreshInventoryUI();
+        }
+    }
+
+    public void ToggleCharacterStats()
+    {
+        if (_characterModal == null) return;
+        _characterModal.Visible = !_characterModal.Visible;
+        if (_characterModal.Visible)
+        {
+            if (_inventoryModal != null) _inventoryModal.Visible = false;
+            RefreshCharacterStatsUI();
+        }
+    }
+
+    public void RefreshXP(int current, int required, int level)
+    {
+        if (_xpBar != null)
+        {
+            _xpBar.MaxValue = required;
+            _xpBar.Value = current;
+        }
+        if (_xpLabel != null)
+        {
+            _xpLabel.Text = $"Досвід (XP): {current} / {required}";
+        }
+        if (_levelBadgeLabel != null)
+        {
+            _levelBadgeLabel.Text = $"Рівень: {level}";
+        }
+    }
+
+    public void OnLevelUp(int newLevel)
+    {
+        ShowToast($"✦ РІВЕНЬ ПІДВИЩЕНО! Рівень {newLevel} ✦ (+5 очок характеристик)", new Color(1.0f, 0.85f, 0.2f));
+        RefreshCharacterStatsUI();
+    }
+
+    public void RefreshCharacterStatsUI()
+    {
+        var prog = PlayerProgression.Instance;
+        var inv = InventoryManager.Instance;
+        var player = PlayerController.Instance;
+        if (prog == null) return;
+
+        if (_levelBadgeLabel != null) _levelBadgeLabel.Text = $"Рівень: {prog.Level}";
+        if (_pointsLabel != null) _pointsLabel.Text = $"✦ Доступно очок для розподілу: {prog.UnspentPoints}";
+
+        // Show/hide [+] buttons based on unspent points
+        bool hasPoints = prog.UnspentPoints > 0;
+        if (_strengthPlusBtn != null) _strengthPlusBtn.Visible = hasPoints;
+        if (_agilityPlusBtn != null) _agilityPlusBtn.Visible = hasPoints;
+        if (_vitalityPlusBtn != null) _vitalityPlusBtn.Visible = hasPoints;
+        if (_willpowerPlusBtn != null) _willpowerPlusBtn.Visible = hasPoints;
+
+        if (_strengthLabel != null)
+            _strengthLabel.Text = $"⚔️ Сила: {prog.Strength} (+{(prog.Strength - 10) * 1.5f:0.#} до фіз. атаки)";
+        if (_agilityLabel != null)
+            _agilityLabel.Text = $"🏹 Спритність: {prog.Agility} (+{(prog.Agility - 10) * 0.5f:0.#} до атаки/криту)";
+        if (_vitalityLabel != null)
+            _vitalityLabel.Text = $"❤️ Живучість: {prog.Vitality} (+{(prog.Vitality - 10) * 8} Max HP)";
+        if (_willpowerLabel != null)
+            _willpowerLabel.Text = $"🔮 Воля: {prog.Willpower} (+{(prog.Willpower - 10) * 2}% магічного супротиву)";
+
+        if (player != null)
+        {
+            int totalDmg = player.GetTotalAttackDamage();
+            int totalArmor = player.GetTotalArmor();
+            int totalMaxHp = player.GetTotalMaxHealth();
+
+            if (_combatDamageLabel != null)
+                _combatDamageLabel.Text = $"Загальна Атака: {totalDmg} (База {player.AttackDamage} + Стати {prog.GetBonusDamage()} + Лут {inv?.GetBonusDamage() ?? 0})";
+            if (_combatArmorLabel != null)
+                _combatArmorLabel.Text = $"Загальна Броня: {totalArmor} (Зниження шкоди на {Mathf.Min(75, totalArmor * 2)}%)";
+            if (_combatHealthLabel != null)
+                _combatHealthLabel.Text = $"Загальне Здоров'я: {player.CurrentHealth} / {totalMaxHp} (+{prog.GetBonusHealth()} від Живучості)";
+
+            OnHealthChanged(player.CurrentHealth, totalMaxHp);
         }
     }
 
@@ -222,14 +370,12 @@ public partial class GraveboundHUD : CanvasLayer
         var inv = InventoryManager.Instance;
         if (inv == null) return;
 
-        // Update Equipment buttons
         UpdateEquipSlotButton(_headSlotBtn, ItemSlotType.Head, "🪖 Шолом");
         UpdateEquipSlotButton(_chestSlotBtn, ItemSlotType.Chest, "🥋 Лати");
         UpdateEquipSlotButton(_weaponSlotBtn, ItemSlotType.Weapon, "⚔️ Зброя");
         UpdateEquipSlotButton(_shieldSlotBtn, ItemSlotType.Shield, "🛡️ Щит");
         UpdateEquipSlotButton(_ringSlotBtn, ItemSlotType.Ring, "💍 Перстень");
 
-        // Update Bag grid
         if (_bagGrid != null)
         {
             var children = _bagGrid.GetChildren();
@@ -252,13 +398,13 @@ public partial class GraveboundHUD : CanvasLayer
             }
         }
 
-        // Update Stats summary
         var player = PlayerController.Instance;
+        var prog = PlayerProgression.Instance;
         if (player != null)
         {
-            int bonusDmg = inv.GetBonusDamage();
+            int bonusDmg = (inv.GetBonusDamage()) + (prog?.GetBonusDamage() ?? 0);
             int bonusArmor = inv.GetBonusArmor();
-            int bonusHp = inv.GetBonusHealth();
+            int bonusHp = (inv.GetBonusHealth()) + (prog?.GetBonusHealth() ?? 0);
 
             if (_statsDamageLabel != null)
                 _statsDamageLabel.Text = $"Атака: {player.AttackDamage} (+{bonusDmg}) -> {player.GetTotalAttackDamage()}";
@@ -315,12 +461,17 @@ public partial class GraveboundHUD : CanvasLayer
 
     public void OnItemPickedUp(string name, string colorHex)
     {
+        ShowToast($"✦ Знайдено: {name}", Color.FromHtml(colorHex));
+    }
+
+    public void ShowToast(string text, Color color)
+    {
         if (_lootToastLabel != null)
         {
-            _lootToastLabel.Text = $"✦ Знайдено: {name}";
-            _lootToastLabel.Modulate = Color.FromHtml(colorHex);
+            _lootToastLabel.Text = text;
+            _lootToastLabel.Modulate = color;
             _lootToastLabel.Visible = true;
-            _lootToastTimer = 3.0f;
+            _lootToastTimer = 3.5f;
         }
     }
 
@@ -375,8 +526,22 @@ public partial class GraveboundHUD : CanvasLayer
             return;
         }
 
+        if (@event.IsActionPressed("toggle_character_stats"))
+        {
+            ToggleCharacterStats();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
         if (@event.IsActionPressed("ui_cancel"))
         {
+            if (_characterModal != null && _characterModal.Visible)
+            {
+                _characterModal.Visible = false;
+                GetViewport().SetInputAsHandled();
+                return;
+            }
+
             if (_inventoryModal != null && _inventoryModal.Visible)
             {
                 _inventoryModal.Visible = false;

@@ -346,6 +346,10 @@ public partial class SkeletonEnemy : CharacterBody3D
             GetTree().CurrentScene?.CallDeferred("add_child", worldItem);
         }
 
+        // Award Experience to Player
+        int xp = isBoss ? 250 : (EnemyName.Contains("асасин") ? 45 : 35);
+        PlayerProgression.Instance?.AddXP(xp);
+
         EmitSignal(SignalName.EnemyDied, this);
     }
 

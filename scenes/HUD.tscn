@@ -247,22 +247,35 @@ text = "100 / 100"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="InventoryButton" type="Button" parent="Control/BottomBar"]
-custom_minimum_size = Vector2(180, 28)
+[node name="ButtonsHBox" type="HBoxContainer" parent="Control/BottomBar"]
 layout_mode = 2
-size_flags_horizontal = 4
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="InventoryButton" type="Button" parent="Control/BottomBar/ButtonsHBox"]
+custom_minimum_size = Vector2(170, 28)
+layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.85, 0.45, 1)
 theme_override_font_sizes/font_size = 12
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "🎒 ІНВЕНТАР [I]"
 
+[node name="CharacterButton" type="Button" parent="Control/BottomBar/ButtonsHBox"]
+custom_minimum_size = Vector2(170, 28)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.85, 1.0, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "👤 ПЕРСОНАЖ [C]"
+
 [node name="ControlsHint" type="Label" parent="Control/BottomBar"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 0.85)
 theme_override_font_sizes/font_size = 11
-text = "[ЛКМ / ПКМ]: Рух та Атака | [Пробіл]: Удар | [I]: Інвентар | [E]: Вівтар | [Коліщатко]: Зум | [F11]: Повний екран"
+text = "[ЛКМ / ПКМ]: Рух та Атака | [Пробіл]: Удар | [I]: Інвентар | [C]: Персонаж | [E]: Вівтар | [F11]: Екран"
 horizontal_alignment = 1
 
 [node name="LootToastLabel" type="Label" parent="Control"]
@@ -509,6 +522,157 @@ theme_override_font_sizes/font_size = 13
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "ЗАКРИТИ ІНВЕНТАР (I / Esc)"
+
+[node name="CharacterModal" type="PanelContainer" parent="Control/Center"]
+visible = false
+custom_minimum_size = Vector2(560, 420)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_lore")
+
+[node name="VBox" type="VBoxContainer" parent="Control/Center/CharacterModal"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderHBox" type="HBoxContainer" parent="Control/Center/CharacterModal/VBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Control/Center/CharacterModal/VBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.82, 0.45, 1)
+theme_override_font_sizes/font_size = 18
+text = "👤 ХАРАКТЕРИСТИКИ ГЕРОЯ"
+
+[node name="LevelBadge" type="Label" parent="Control/Center/CharacterModal/VBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.95, 0.65, 1)
+theme_override_font_sizes/font_size = 16
+text = "Рівень: 1"
+
+[node name="HSeparator" type="HSeparator" parent="Control/Center/CharacterModal/VBox"]
+layout_mode = 2
+
+[node name="XpBox" type="VBoxContainer" parent="Control/Center/CharacterModal/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="XpLabel" type="Label" parent="Control/Center/CharacterModal/VBox/XpBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+text = "Досвід (XP): 0 / 80"
+
+[node name="XpBar" type="ProgressBar" parent="Control/Center/CharacterModal/VBox/XpBox"]
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_health_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_health_fill")
+value = 0.0
+show_percentage = false
+
+[node name="PointsLabel" type="Label" parent="Control/Center/CharacterModal/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1.0, 0.85, 0.25, 1)
+theme_override_font_sizes/font_size = 14
+text = "✦ Доступно очок для розподілу: 3"
+
+[node name="AttributesVBox" type="VBoxContainer" parent="Control/Center/CharacterModal/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="StrengthHBox" type="HBoxContainer" parent="Control/Center/CharacterModal/VBox/AttributesVBox"]
+layout_mode = 2
+
+[node name="StrengthLabel" type="Label" parent="Control/Center/CharacterModal/VBox/AttributesVBox/StrengthHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "⚔️ Сила: 10 (+1.5 фіз. атаки)"
+
+[node name="StrengthPlusBtn" type="Button" parent="Control/Center/CharacterModal/VBox/AttributesVBox/StrengthHBox"]
+custom_minimum_size = Vector2(40, 26)
+layout_mode = 2
+text = "[ + ]"
+
+[node name="AgilityHBox" type="HBoxContainer" parent="Control/Center/CharacterModal/VBox/AttributesVBox"]
+layout_mode = 2
+
+[node name="AgilityLabel" type="Label" parent="Control/Center/CharacterModal/VBox/AttributesVBox/AgilityHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "🏹 Спритність: 10 (+швидкість/крит)"
+
+[node name="AgilityPlusBtn" type="Button" parent="Control/Center/CharacterModal/VBox/AttributesVBox/AgilityHBox"]
+custom_minimum_size = Vector2(40, 26)
+layout_mode = 2
+text = "[ + ]"
+
+[node name="VitalityHBox" type="HBoxContainer" parent="Control/Center/CharacterModal/VBox/AttributesVBox"]
+layout_mode = 2
+
+[node name="VitalityLabel" type="Label" parent="Control/Center/CharacterModal/VBox/AttributesVBox/VitalityHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "❤️ Живучість: 10 (+8 HP за очко)"
+
+[node name="VitalityPlusBtn" type="Button" parent="Control/Center/CharacterModal/VBox/AttributesVBox/VitalityHBox"]
+custom_minimum_size = Vector2(40, 26)
+layout_mode = 2
+text = "[ + ]"
+
+[node name="WillpowerHBox" type="HBoxContainer" parent="Control/Center/CharacterModal/VBox/AttributesVBox"]
+layout_mode = 2
+
+[node name="WillpowerLabel" type="Label" parent="Control/Center/CharacterModal/VBox/AttributesVBox/WillpowerHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "🔮 Воля: 10 (+магічний супротив)"
+
+[node name="WillpowerPlusBtn" type="Button" parent="Control/Center/CharacterModal/VBox/AttributesVBox/WillpowerHBox"]
+custom_minimum_size = Vector2(40, 26)
+layout_mode = 2
+text = "[ + ]"
+
+[node name="HSeparator2" type="HSeparator" parent="Control/Center/CharacterModal/VBox"]
+layout_mode = 2
+
+[node name="CombatSummaryVBox" type="VBoxContainer" parent="Control/Center/CharacterModal/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="CombatDamage" type="Label" parent="Control/Center/CharacterModal/VBox/CombatSummaryVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.45, 0.35, 1)
+theme_override_font_sizes/font_size = 13
+text = "Загальна Шкода: 25"
+
+[node name="CombatArmor" type="Label" parent="Control/Center/CharacterModal/VBox/CombatSummaryVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.75, 1.0, 1)
+theme_override_font_sizes/font_size = 13
+text = "Загальна Броня: 0"
+
+[node name="CombatHealth" type="Label" parent="Control/Center/CharacterModal/VBox/CombatSummaryVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.95, 0.5, 1)
+theme_override_font_sizes/font_size = 13
+text = "Загальне Здоров'я: 100"
+
+[node name="HSeparator3" type="HSeparator" parent="Control/Center/CharacterModal/VBox"]
+layout_mode = 2
+
+[node name="CloseButton" type="Button" parent="Control/Center/CharacterModal/VBox"]
+custom_minimum_size = Vector2(220, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.95, 0.85, 0.6, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "ЗАКРИТИ (C / Esc)"
 
 [node name="DeathScreen" type="CenterContainer" parent="Control"]
 visible = false

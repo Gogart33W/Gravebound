@@ -24,8 +24,10 @@ public partial class PlayerController : CharacterBody3D
     public int CurrentHealth { get; set; } = 100;
     public bool IsDead => _isDead;
 
-    public int GetTotalMaxHealth() => MaxHealth + (InventoryManager.Instance?.GetBonusHealth() ?? 0);
-    public int GetTotalAttackDamage() => AttackDamage + (InventoryManager.Instance?.GetBonusDamage() ?? 0);
+    public int GetTotalMaxHealth() =>
+        MaxHealth + (PlayerProgression.Instance?.GetBonusHealth() ?? 0) + (InventoryManager.Instance?.GetBonusHealth() ?? 0);
+    public int GetTotalAttackDamage() =>
+        AttackDamage + (PlayerProgression.Instance?.GetBonusDamage() ?? 0) + (InventoryManager.Instance?.GetBonusDamage() ?? 0);
     public int GetTotalArmor() => InventoryManager.Instance?.GetBonusArmor() ?? 0;
 
     private NavigationAgent3D? _navAgent;
@@ -112,6 +114,13 @@ public partial class PlayerController : CharacterBody3D
             InputMap.ActionAddEvent("toggle_inventory", keyB);
         }
 
+        if (!InputMap.HasAction("toggle_character_stats"))
+        {
+            InputMap.AddAction("toggle_character_stats");
+            var keyC = new InputEventKey { Keycode = Key.C, PhysicalKeycode = Key.C };
+            InputMap.ActionAddEvent("toggle_character_stats", keyC);
+        }
+
         Callable.From(ActorSetup).CallDeferred();
         PlayAnimation("Idle");
     }
@@ -141,6 +150,13 @@ public partial class PlayerController : CharacterBody3D
         if (@event.IsActionPressed("toggle_inventory"))
         {
             GraveboundHUD.Instance?.ToggleInventory();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        if (@event.IsActionPressed("toggle_character_stats"))
+        {
+            GraveboundHUD.Instance?.ToggleCharacterStats();
             GetViewport().SetInputAsHandled();
             return;
         }
