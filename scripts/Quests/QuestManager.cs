@@ -14,6 +14,9 @@ public class QuestData
     public string Title { get; set; } = "";
     public string Giver { get; set; } = "";
     public string Description { get; set; } = "";
+    public string ObjectiveShort { get; set; } = "";
+    public string TargetLocation { get; set; } = "";
+    public string TargetScene { get; set; } = "";
     public int TargetAmount { get; set; } = 1;
     public int CurrentAmount { get; set; } = 0;
     public bool IsAccepted { get; set; } = false;
@@ -31,12 +34,15 @@ public partial class QuestManager : Node
 {
     public static QuestManager? Instance { get; private set; }
 
+    public static string TrackedQuestId { get; set; } = "quest_crypt";
+
     private static readonly Dictionary<string, QuestData> _quests = new();
     private static readonly HashSet<string> _unlockedLoreIds = new();
     private static bool _initialized = false;
 
     [Signal] public delegate void QuestUpdatedEventHandler(string questId);
     [Signal] public delegate void QuestCompletedEventHandler(string questId, string title);
+    [Signal] public delegate void TrackedQuestChangedEventHandler(string questId);
 
     public override void _EnterTree()
     {
@@ -71,6 +77,9 @@ public partial class QuestManager : Node
             Title = "Пробудження в Попелі",
             Giver = "Старійшина Ольгерд",
             Description = "Прадавній склеп Валґарду охоплений мороком. Знищіть 3 скелетів-вартових та розбийте печать на вівтарі, щоб відкрити портал у підземелля Катакомб.",
+            ObjectiveShort = "Знищіть вартових (3) та дослідіть вівтар",
+            TargetLocation = "Забута Крипта",
+            TargetScene = "res://scenes/Main.tscn",
             TargetAmount = 3,
             CurrentAmount = 0,
             IsAccepted = true, // Main initial quest is active by default
@@ -87,6 +96,9 @@ public partial class QuestManager : Node
             Title = "Сталь для Варти",
             Giver = "Коваль Бранн",
             Description = "Ковалю Бранну потрібна зачарована сталь із Катакомб для відновлення зброярні вартових. Знайдіть Зачарований Залізний Меч у підземеллі та принесіть його до кузні.",
+            ObjectiveShort = "Знайдіть зачарований меч у катакомбах",
+            TargetLocation = "Долина Згарища / Катакомби",
+            TargetScene = "res://scenes/ValleyOfAshes.tscn",
             TargetAmount = 1,
             CurrentAmount = 0,
             IsAccepted = false,
@@ -114,6 +126,9 @@ public partial class QuestManager : Node
             Title = "Багряний Мор",
             Giver = "Алхімік Селена",
             Description = "Скверна попелу отруює землю. Джерело зарази — сам Архімаг Мор-Гул у глибинах катакомб. Здолайте його та принесіть есенцію для зцілення землі.",
+            ObjectiveShort = "Здолайте Архімага Мор-Гула у Катакомбах",
+            TargetLocation = "Катакомби Мор-Гула",
+            TargetScene = "res://scenes/Catacombs.tscn",
             TargetAmount = 1,
             CurrentAmount = 0,
             IsAccepted = false,
@@ -141,6 +156,9 @@ public partial class QuestManager : Node
             Title = "Обеліски Предків",
             Giver = "Старійшина Ольгерд",
             Description = "Прадавні обеліски ефіру зв'язують безпечний табір, склеп та катакомби. Дослідіть усі три регіони та активуйте швидке переміщення.",
+            ObjectiveShort = "Активуйте 3 обеліски переміщення",
+            TargetLocation = "Мережа Обелісків Акту I",
+            TargetScene = "res://scenes/HubTown.tscn",
             TargetAmount = 3,
             CurrentAmount = 1, // Hub is unlocked by default
             IsAccepted = false,
@@ -158,6 +176,36 @@ public partial class QuestManager : Node
             },
             LoreTitle = "Хроніки Валґарду IV: Мережа Обелісків Ефіру",
             LoreSnippet = "«Шляхи ефіру не підвладні часу. Доки горять руни на обелісках, воїни Варти можуть долати ліги за один подих.»"
+        };
+
+        // 5. Wilderness Patrol Quest
+        _quests["quest_wilderness"] = new QuestData
+        {
+            Id = "quest_wilderness",
+            Title = "Патрулі Згарища",
+            Giver = "Старійшина Ольгерд",
+            Description = "Долина Згарища за межами фортеці наповнена патрулями нежиті. Знайдіть древнє Святилище Попелу та знищіть 4 скелетів у відкритому світі.",
+            ObjectiveShort = "Знищіть 4 скелетів у Долині Згарища",
+            TargetLocation = "Долина Згарища (Відкритий Світ)",
+            TargetScene = "res://scenes/ValleyOfAshes.tscn",
+            TargetAmount = 4,
+            CurrentAmount = 0,
+            IsAccepted = false,
+            RewardGold = 120,
+            RewardXP = 240,
+            RewardItem = new ItemData
+            {
+                Id = "magic_iron_sword_reward",
+                ItemName = "Зачарований Залізний Меч",
+                Description = "Гострий клинок вартових, натертий оливою могильного срібла.",
+                Rarity = ItemRarity.Magic,
+                SlotType = ItemSlotType.Weapon,
+                BonusDamage = 8,
+                BonusHealth = 10,
+                ValueGold = 45
+            },
+            LoreTitle = "Хроніки Валґарду V: Долина Вічного Згарища",
+            LoreSnippet = "«Колись тут шуміли золоті лани королівських наділів. Нині лише чорна земля та попіл, що скрипить на зубах живих...»"
         };
     }
 
@@ -252,4 +300,27 @@ public partial class QuestManager : Node
     }
 
     public bool IsLoreUnlocked(string questId) => _unlockedLoreIds.Contains(questId);
+
+    public void SetTrackedQuest(string questId)
+    {
+        TrackedQuestId = questId;
+        EmitSignal(SignalName.TrackedQuestChanged, questId);
+        GraveboundHUD.Instance?.RefreshQuestBox();
+    }
+
+    public QuestData? GetTrackedQuest()
+    {
+        if (!string.IsNullOrEmpty(TrackedQuestId) && _quests.TryGetValue(TrackedQuestId, out var q))
+        {
+            return q;
+        }
+
+        // Fallback: first active quest, or first accepted quest
+        foreach (var quest in _quests.Values)
+        {
+            if (quest.IsAccepted && !quest.IsCompleted) return quest;
+        }
+
+        return _quests.TryGetValue("quest_crypt", out var first) ? first : null;
+    }
 }

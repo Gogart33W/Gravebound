@@ -104,6 +104,22 @@ corner_radius_bottom_left = 4
 content_margin_top = 6.0
 content_margin_bottom = 6.0
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_map_card"]
+bg_color = Color(0.08, 0.09, 0.12, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.65, 0.52, 0.28, 0.85)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_hud")
 
@@ -214,9 +230,9 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -280.0
+offset_left = -320.0
 offset_top = -84.0
-offset_right = 280.0
+offset_right = 320.0
 offset_bottom = -14.0
 grow_horizontal = 2
 grow_vertical = 0
@@ -250,10 +266,10 @@ vertical_alignment = 1
 [node name="ButtonsHBox" type="HBoxContainer" parent="Control/BottomBar"]
 layout_mode = 2
 alignment = 1
-theme_override_constants/separation = 12
+theme_override_constants/separation = 8
 
 [node name="InventoryButton" type="Button" parent="Control/BottomBar/ButtonsHBox"]
-custom_minimum_size = Vector2(170, 28)
+custom_minimum_size = Vector2(150, 28)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.85, 0.45, 1)
 theme_override_font_sizes/font_size = 12
@@ -262,29 +278,38 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "🎒 ІНВЕНТАР [I]"
 
 [node name="CharacterButton" type="Button" parent="Control/BottomBar/ButtonsHBox"]
-custom_minimum_size = Vector2(170, 28)
+custom_minimum_size = Vector2(150, 28)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.45, 0.85, 1.0, 1)
 theme_override_font_sizes/font_size = 12
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-text = "👤 ПЕРСОНАЖ [C]"
+text = "👤 СТАТИ [C]"
 
 [node name="QuestButton" type="Button" parent="Control/BottomBar/ButtonsHBox"]
-custom_minimum_size = Vector2(170, 28)
+custom_minimum_size = Vector2(150, 28)
 layout_mode = 2
 theme_override_colors/font_color = Color(1.0, 0.82, 0.35, 1)
 theme_override_font_sizes/font_size = 12
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-text = "📜 ЗАВДАННЯ ТА ЛОР [L]"
+text = "📜 КВЕСТИ [L]"
+
+[node name="MapButton" type="Button" parent="Control/BottomBar/ButtonsHBox"]
+custom_minimum_size = Vector2(150, 28)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🗺️ КАРТА [M]"
 
 [node name="ControlsHint" type="Label" parent="Control/BottomBar"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 0.85)
 theme_override_font_sizes/font_size = 11
-text = "[ЛКМ / ПКМ]: Рух та Атака | [Пробіл]: Удар | [I]: Торба | [C]: Стати | [L]: Квести | [T]: Портал | [E]: Дія"
+text = "[ЛКМ / ПКМ]: Рух та Атака | [Пробіл]: Удар | [I]: Торба | [C]: Стати | [L]: Квести | [M]: Карта | [T]: Портал | [E]: Дія"
 horizontal_alignment = 1
 
 [node name="LootToastLabel" type="Label" parent="Control"]
@@ -847,6 +872,15 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "🏕️ Притулок Останньої Варти (Безпечний Хаб)"
 
+[node name="DestWildernessBtn" type="Button" parent="Control/Center/WaypointModal/VBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.9, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🌲 Долина Згарища (Відкритий Світ)"
+
 [node name="DestCryptBtn" type="Button" parent="Control/Center/WaypointModal/VBox"]
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
@@ -898,6 +932,42 @@ theme_override_colors/font_color = Color(0.95, 0.82, 0.45, 1)
 theme_override_font_sizes/font_size = 18
 text = "📜 ЖУРНАЛ ЗАВДАНЬ ТА ХРОНІКИ ВАЛҐАРДУ"
 
+[node name="FilterTabsHBox" type="HBoxContainer" parent="Control/Center/QuestLogModal/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FilterAllBtn" type="Button" parent="Control/Center/QuestLogModal/VBox/FilterTabsHBox"]
+custom_minimum_size = Vector2(110, 26)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "✦ УСІ (5)"
+
+[node name="FilterActiveBtn" type="Button" parent="Control/Center/QuestLogModal/VBox/FilterTabsHBox"]
+custom_minimum_size = Vector2(110, 26)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "⏳ АКТИВНІ"
+
+[node name="FilterCompletedBtn" type="Button" parent="Control/Center/QuestLogModal/VBox/FilterTabsHBox"]
+custom_minimum_size = Vector2(110, 26)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "✔ ВИКОНАНІ"
+
+[node name="FilterLoreBtn" type="Button" parent="Control/Center/QuestLogModal/VBox/FilterTabsHBox"]
+custom_minimum_size = Vector2(130, 26)
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "📖 ХРОНІКИ ЛОРУ"
+
 [node name="HSeparator" type="HSeparator" parent="Control/Center/QuestLogModal/VBox"]
 layout_mode = 2
 
@@ -915,7 +985,7 @@ theme_override_constants/separation = 6
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.82, 0.45, 1)
 theme_override_font_sizes/font_size = 13
-text = "АКТИВНІ ТА ДОСТУПНІ КВЕСТИ:"
+text = "СПИСОК ЗАВДАНЬ:"
 
 [node name="QuestsScroll" type="ScrollContainer" parent="Control/Center/QuestLogModal/VBox/ContentHBox/LeftVBox"]
 custom_minimum_size = Vector2(0, 170)
@@ -973,6 +1043,28 @@ theme_override_font_sizes/font_size = 13
 text = "Тут будуть показані деталі вибраного сюжетного завдання або прочитані стародавні сувої лору."
 autowrap_mode = 2
 
+[node name="ActionsHBox" type="HBoxContainer" parent="Control/Center/QuestLogModal/VBox/ContentHBox/RightVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TrackQuestBtn" type="Button" parent="Control/Center/QuestLogModal/VBox/ContentHBox/RightVBox/ActionsHBox"]
+custom_minimum_size = Vector2(170, 30)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.82, 0.45, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "📌 ВІДСТЕЖУВАТИ КВЕСТ"
+
+[node name="ShowOnMapBtn" type="Button" parent="Control/Center/QuestLogModal/VBox/ContentHBox/RightVBox/ActionsHBox"]
+custom_minimum_size = Vector2(170, 30)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 1.0, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🗺️ ПОКАЗАТИ НА КАРТІ"
+
 [node name="HSeparator2" type="HSeparator" parent="Control/Center/QuestLogModal/VBox"]
 layout_mode = 2
 
@@ -985,6 +1077,227 @@ theme_override_font_sizes/font_size = 13
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "ЗАКРИТИ ЖУРНАЛ (L / Esc)"
+
+[node name="WorldMapModal" type="PanelContainer" parent="Control/Center"]
+visible = false
+custom_minimum_size = Vector2(860, 560)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_lore")
+
+[node name="VBox" type="VBoxContainer" parent="Control/Center/WorldMapModal"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderHBox" type="HBoxContainer" parent="Control/Center/WorldMapModal/VBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Control/Center/WorldMapModal/VBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.82, 0.45, 1)
+theme_override_font_sizes/font_size = 18
+text = "🗺️ КАРТА АКТУ I: ПОПЕЛЯСТІ ЗЕМЛІ ВАЛҐАРДУ"
+
+[node name="ActSub" type="Label" parent="Control/Center/WorldMapModal/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 0.85)
+theme_override_font_sizes/font_size = 12
+text = "Мережа прадавніх Обелісків Ефіру. Оберіть локацію для подорожі або перегляньте активні маркери завдань."
+
+[node name="HSeparator" type="HSeparator" parent="Control/Center/WorldMapModal/VBox"]
+layout_mode = 2
+
+[node name="MapGrid" type="GridContainer" parent="Control/Center/WorldMapModal/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 14
+theme_override_constants/v_separation = 14
+columns = 2
+
+[node name="HubCard" type="PanelContainer" parent="Control/Center/WorldMapModal/VBox/MapGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_map_card")
+
+[node name="VBox" type="VBoxContainer" parent="Control/Center/WorldMapModal/VBox/MapGrid/HubCard"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TitleHBox" type="HBoxContainer" parent="Control/Center/WorldMapModal/VBox/MapGrid/HubCard/VBox"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="Control/Center/WorldMapModal/VBox/MapGrid/HubCard/VBox/TitleHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.4, 1.0, 0.7, 1)
+theme_override_font_sizes/font_size = 14
+text = "🏕️ Притулок Останньої Варти"
+
+[node name="StatusBadge" type="Label" parent="Control/Center/WorldMapModal/VBox/MapGrid/HubCard/VBox/TitleHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1.0, 0.9, 0.4, 1)
+theme_override_font_sizes/font_size = 11
+text = "[ Безпечний Хаб ]"
+
+[node name="Desc" type="Label" parent="Control/Center/WorldMapModal/VBox/MapGrid/HubCard/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_font_sizes/font_size = 11
+text = "Укріплений табір вцілілих воїнів. Тут знаходяться торговці: Коваль Бранн, Травниця Селена та Хранитель Ольгерд."
+autowrap_mode = 2
+
+[node name="HubTravelBtn" type="Button" parent="Control/Center/WorldMapModal/VBox/MapGrid/HubCard/VBox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 1.0, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "⚡ Вирушити в Табір"
+
+[node name="WildernessCard" type="PanelContainer" parent="Control/Center/WorldMapModal/VBox/MapGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_map_card")
+
+[node name="VBox" type="VBoxContainer" parent="Control/Center/WorldMapModal/VBox/MapGrid/WildernessCard"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TitleHBox" type="HBoxContainer" parent="Control/Center/WorldMapModal/VBox/MapGrid/WildernessCard/VBox"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="Control/Center/WorldMapModal/VBox/MapGrid/WildernessCard/VBox/TitleHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.5, 0.9, 0.65, 1)
+theme_override_font_sizes/font_size = 14
+text = "🌲 Долина Згарища"
+
+[node name="StatusBadge" type="Label" parent="Control/Center/WorldMapModal/VBox/MapGrid/WildernessCard/VBox/TitleHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.8, 0.3, 1)
+theme_override_font_sizes/font_size = 11
+text = "[ Відкритий Світ ]"
+
+[node name="Desc" type="Label" parent="Control/Center/WorldMapModal/VBox/MapGrid/WildernessCard/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_font_sizes/font_size = 11
+text = "Широкі попелясті пустки. Патрулі мерців, руїни кам'яних форпостів та Святилище Попелу, що живить нежить."
+autowrap_mode = 2
+
+[node name="WildernessTravelBtn" type="Button" parent="Control/Center/WorldMapModal/VBox/MapGrid/WildernessCard/VBox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.9, 0.65, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "⚡ Вирушити в Долину Згарища"
+
+[node name="CryptCard" type="PanelContainer" parent="Control/Center/WorldMapModal/VBox/MapGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_map_card")
+
+[node name="VBox" type="VBoxContainer" parent="Control/Center/WorldMapModal/VBox/MapGrid/CryptCard"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TitleHBox" type="HBoxContainer" parent="Control/Center/WorldMapModal/VBox/MapGrid/CryptCard/VBox"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="Control/Center/WorldMapModal/VBox/MapGrid/CryptCard/VBox/TitleHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.85, 0.6, 1)
+theme_override_font_sizes/font_size = 14
+text = "💀 Забута Крипта Валґарду"
+
+[node name="StatusBadge" type="Label" parent="Control/Center/WorldMapModal/VBox/MapGrid/CryptCard/VBox/TitleHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_font_sizes/font_size = 11
+text = "[ Рівень 1 ]"
+
+[node name="Desc" type="Label" parent="Control/Center/WorldMapModal/VBox/MapGrid/CryptCard/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_font_sizes/font_size = 11
+text = "Прадавня усипальниця лицарів. Склеп охороняють 3 вартові скелети та магічний вівтар першої печаті."
+autowrap_mode = 2
+
+[node name="CryptTravelBtn" type="Button" parent="Control/Center/WorldMapModal/VBox/MapGrid/CryptCard/VBox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.85, 0.6, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "⚡ Спуститися в Крипту"
+
+[node name="CatacombsCard" type="PanelContainer" parent="Control/Center/WorldMapModal/VBox/MapGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_map_card")
+
+[node name="VBox" type="VBoxContainer" parent="Control/Center/WorldMapModal/VBox/MapGrid/CatacombsCard"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TitleHBox" type="HBoxContainer" parent="Control/Center/WorldMapModal/VBox/MapGrid/CatacombsCard/VBox"]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="Control/Center/WorldMapModal/VBox/MapGrid/CatacombsCard/VBox/TitleHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.35, 0.95, 1)
+theme_override_font_sizes/font_size = 14
+text = "🩸 Катакомби Мор-Гула"
+
+[node name="StatusBadge" type="Label" parent="Control/Center/WorldMapModal/VBox/MapGrid/CatacombsCard/VBox/TitleHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1.0, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 11
+text = "[ БОС: Рівень 3-5 ]"
+
+[node name="Desc" type="Label" parent="Control/Center/WorldMapModal/VBox/MapGrid/CatacombsCard/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_font_sizes/font_size = 11
+text = "Глибокий лабіринт підземель. Тут криється Архімаг Мор-Гул та його багряні магічні покровителі."
+autowrap_mode = 2
+
+[node name="CatacombsTravelBtn" type="Button" parent="Control/Center/WorldMapModal/VBox/MapGrid/CatacombsCard/VBox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.35, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "⚡ Проникнути в Катакомби"
+
+[node name="HSeparator2" type="HSeparator" parent="Control/Center/WorldMapModal/VBox"]
+layout_mode = 2
+
+[node name="WorldMapCloseButton" type="Button" parent="Control/Center/WorldMapModal/VBox"]
+custom_minimum_size = Vector2(220, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.95, 0.85, 0.6, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "ЗАКРИТИ КАРТУ (M / Esc)"
 
 [node name="DeathScreen" type="CenterContainer" parent="Control"]
 visible = false

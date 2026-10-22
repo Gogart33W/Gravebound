@@ -52,6 +52,7 @@ public partial class PlayerController : CharacterBody3D
     private CryptAltar? _targetAltar;
     private NPC.MerchantNPC? _targetMerchant;
     private Environment.WaypointStone? _targetWaypoint;
+    private Environment.WorldGate? _targetGate;
     private Vector3 _initialSpawnPos;
 
     public static PlayerController? Instance { get; private set; }
@@ -138,6 +139,15 @@ public partial class PlayerController : CharacterBody3D
             InputMap.ActionAddEvent("toggle_quest_log", keyL);
         }
 
+        if (!InputMap.HasAction("toggle_world_map"))
+        {
+            InputMap.AddAction("toggle_world_map");
+            var keyM = new InputEventKey { Keycode = Key.M, PhysicalKeycode = Key.M };
+            var keyTab = new InputEventKey { Keycode = Key.Tab, PhysicalKeycode = Key.Tab };
+            InputMap.ActionAddEvent("toggle_world_map", keyM);
+            InputMap.ActionAddEvent("toggle_world_map", keyTab);
+        }
+
         Callable.From(ActorSetup).CallDeferred();
         PlayAnimation("Idle");
     }
@@ -195,6 +205,13 @@ public partial class PlayerController : CharacterBody3D
         if (@event.IsActionPressed("toggle_quest_log"))
         {
             GraveboundHUD.Instance?.ToggleQuestLog();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        if (@event.IsActionPressed("toggle_world_map"))
+        {
+            GraveboundHUD.Instance?.ToggleWorldMap();
             GetViewport().SetInputAsHandled();
             return;
         }
@@ -372,6 +389,7 @@ public partial class PlayerController : CharacterBody3D
                 _targetAltar = null;
                 _targetEnemy = null;
                 _targetMerchant = null;
+                _targetGate = null;
                 if (GlobalPosition.DistanceTo(waypoint.GlobalPosition) <= 2.8f)
                 {
                     waypoint.Interact();
@@ -380,6 +398,23 @@ public partial class PlayerController : CharacterBody3D
                 }
                 _targetWaypoint = waypoint;
                 MoveTo(waypoint.GlobalPosition, showMarker: !isDragging);
+                return;
+            }
+
+            if (collider is Environment.WorldGate gate)
+            {
+                _targetAltar = null;
+                _targetEnemy = null;
+                _targetMerchant = null;
+                _targetWaypoint = null;
+                if (GlobalPosition.DistanceTo(gate.GlobalPosition) <= 2.8f)
+                {
+                    gate.Interact();
+                    _targetGate = null;
+                    return;
+                }
+                _targetGate = gate;
+                MoveTo(gate.GlobalPosition, showMarker: !isDragging);
                 return;
             }
         }
@@ -723,6 +758,20 @@ public partial class PlayerController : CharacterBody3D
             {
                 _targetWaypoint.Interact();
                 _targetWaypoint = null;
+                _hasTargetDestination = false;
+                StopMoving(dt);
+                CharacterMotion.Move(this, ref _fallSpeed, dt);
+                return;
+            }
+        }
+
+        // 5. World Gate Proximity Check
+        if (_targetGate != null)
+        {
+            if (GlobalPosition.DistanceTo(_targetGate.GlobalPosition) <= 2.6f)
+            {
+                _targetGate.Interact();
+                _targetGate = null;
                 _hasTargetDestination = false;
                 StopMoving(dt);
                 CharacterMotion.Move(this, ref _fallSpeed, dt);

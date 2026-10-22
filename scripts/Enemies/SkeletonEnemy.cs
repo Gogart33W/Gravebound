@@ -357,7 +357,15 @@ public partial class SkeletonEnemy : CharacterBody3D
         }
         else
         {
-            Quests.QuestManager.Instance?.AdvanceQuest("quest_crypt", 1);
+            var curScene = GetTree().CurrentScene;
+            if (curScene != null && (curScene.Name == "ValleyOfAshes" || curScene.SceneFilePath.Contains("ValleyOfAshes")))
+            {
+                Quests.QuestManager.Instance?.AdvanceQuest("quest_wilderness", 1);
+            }
+            else
+            {
+                Quests.QuestManager.Instance?.AdvanceQuest("quest_crypt", 1);
+            }
         }
 
         EmitSignal(SignalName.EnemyDied, this);

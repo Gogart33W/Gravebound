@@ -81,6 +81,7 @@ public partial class GraveboundHUD : CanvasLayer
     // Waypoint UI
     private PanelContainer? _waypointModal;
     private Button? _destHubBtn;
+    private Button? _destWildernessBtn;
     private Button? _destCryptBtn;
     private Button? _destCatacombsBtn;
     private Button? _waypointCloseButton;
@@ -93,6 +94,27 @@ public partial class GraveboundHUD : CanvasLayer
     private VBoxContainer? _loreList;
     private Label? _detailTitle;
     private Label? _questDetailLabel;
+    private Button? _filterAllBtn;
+    private Button? _filterActiveBtn;
+    private Button? _filterCompletedBtn;
+    private Button? _filterLoreBtn;
+    private Button? _trackQuestBtn;
+    private Button? _showOnMapBtn;
+    private string _currentQuestFilter = "all";
+    private string _selectedQuestId = "";
+
+    // World Map UI
+    private PanelContainer? _worldMapModal;
+    private Button? _mapButton;
+    private Button? _worldMapCloseButton;
+    private Button? _hubTravelBtn;
+    private Button? _wildernessTravelBtn;
+    private Button? _cryptTravelBtn;
+    private Button? _catacombsTravelBtn;
+    private Label? _hubStatusBadge;
+    private Label? _wildernessStatusBadge;
+    private Label? _cryptStatusBadge;
+    private Label? _catacombsStatusBadge;
 
     // NPC Dialog & Quest section in ShopModal
     private PanelContainer? _npcQuestSection;
@@ -111,7 +133,8 @@ public partial class GraveboundHUD : CanvasLayer
         (_characterModal != null && _characterModal.Visible) ||
         (_shopModal != null && _shopModal.Visible) ||
         (_waypointModal != null && _waypointModal.Visible) ||
-        (_questLogModal != null && _questLogModal.Visible);
+        (_questLogModal != null && _questLogModal.Visible) ||
+        (_worldMapModal != null && _worldMapModal.Visible);
 
     public override void _EnterTree()
     {
@@ -201,6 +224,7 @@ public partial class GraveboundHUD : CanvasLayer
         // Waypoint nodes
         _waypointModal = GetNodeOrNull<PanelContainer>("Control/Center/WaypointModal");
         _destHubBtn = GetNodeOrNull<Button>("Control/Center/WaypointModal/VBox/DestHubBtn");
+        _destWildernessBtn = GetNodeOrNull<Button>("Control/Center/WaypointModal/VBox/DestWildernessBtn");
         _destCryptBtn = GetNodeOrNull<Button>("Control/Center/WaypointModal/VBox/DestCryptBtn");
         _destCatacombsBtn = GetNodeOrNull<Button>("Control/Center/WaypointModal/VBox/DestCatacombsBtn");
         _waypointCloseButton = GetNodeOrNull<Button>("Control/Center/WaypointModal/VBox/WaypointCloseButton");
@@ -213,6 +237,25 @@ public partial class GraveboundHUD : CanvasLayer
         _loreList = GetNodeOrNull<VBoxContainer>("Control/Center/QuestLogModal/VBox/ContentHBox/LeftVBox/LoreScroll/LoreList");
         _detailTitle = GetNodeOrNull<Label>("Control/Center/QuestLogModal/VBox/ContentHBox/RightVBox/DetailTitle");
         _questDetailLabel = GetNodeOrNull<Label>("Control/Center/QuestLogModal/VBox/ContentHBox/RightVBox/DetailScroll/DetailLabel");
+        _filterAllBtn = GetNodeOrNull<Button>("Control/Center/QuestLogModal/VBox/FilterTabsHBox/FilterAllBtn");
+        _filterActiveBtn = GetNodeOrNull<Button>("Control/Center/QuestLogModal/VBox/FilterTabsHBox/FilterActiveBtn");
+        _filterCompletedBtn = GetNodeOrNull<Button>("Control/Center/QuestLogModal/VBox/FilterTabsHBox/FilterCompletedBtn");
+        _filterLoreBtn = GetNodeOrNull<Button>("Control/Center/QuestLogModal/VBox/FilterTabsHBox/FilterLoreBtn");
+        _trackQuestBtn = GetNodeOrNull<Button>("Control/Center/QuestLogModal/VBox/ContentHBox/RightVBox/ActionsHBox/TrackQuestBtn");
+        _showOnMapBtn = GetNodeOrNull<Button>("Control/Center/QuestLogModal/VBox/ContentHBox/RightVBox/ActionsHBox/ShowOnMapBtn");
+
+        // World Map nodes
+        _mapButton = GetNodeOrNull<Button>("Control/BottomBar/ButtonsHBox/MapButton");
+        _worldMapModal = GetNodeOrNull<PanelContainer>("Control/Center/WorldMapModal");
+        _worldMapCloseButton = GetNodeOrNull<Button>("Control/Center/WorldMapModal/VBox/WorldMapCloseButton");
+        _hubTravelBtn = GetNodeOrNull<Button>("Control/Center/WorldMapModal/VBox/MapGrid/HubCard/VBox/HubTravelBtn");
+        _wildernessTravelBtn = GetNodeOrNull<Button>("Control/Center/WorldMapModal/VBox/MapGrid/WildernessCard/VBox/WildernessTravelBtn");
+        _cryptTravelBtn = GetNodeOrNull<Button>("Control/Center/WorldMapModal/VBox/MapGrid/CryptCard/VBox/CryptTravelBtn");
+        _catacombsTravelBtn = GetNodeOrNull<Button>("Control/Center/WorldMapModal/VBox/MapGrid/CatacombsCard/VBox/CatacombsTravelBtn");
+        _hubStatusBadge = GetNodeOrNull<Label>("Control/Center/WorldMapModal/VBox/MapGrid/HubCard/VBox/TitleHBox/StatusBadge");
+        _wildernessStatusBadge = GetNodeOrNull<Label>("Control/Center/WorldMapModal/VBox/MapGrid/WildernessCard/VBox/TitleHBox/StatusBadge");
+        _cryptStatusBadge = GetNodeOrNull<Label>("Control/Center/WorldMapModal/VBox/MapGrid/CryptCard/VBox/TitleHBox/StatusBadge");
+        _catacombsStatusBadge = GetNodeOrNull<Label>("Control/Center/WorldMapModal/VBox/MapGrid/CatacombsCard/VBox/TitleHBox/StatusBadge");
 
         if (_loreModal != null) _loreModal.Visible = false;
         if (_deathScreen != null) _deathScreen.Visible = false;
@@ -223,11 +266,27 @@ public partial class GraveboundHUD : CanvasLayer
         if (_shopModal != null) _shopModal.Visible = false;
         if (_waypointModal != null) _waypointModal.Visible = false;
         if (_questLogModal != null) _questLogModal.Visible = false;
+        if (_worldMapModal != null) _worldMapModal.Visible = false;
         if (_lootToastLabel != null) _lootToastLabel.Visible = false;
 
         if (_questButton != null) _questButton.Pressed += ToggleQuestLog;
         if (_questLogCloseButton != null) _questLogCloseButton.Pressed += () => { if (_questLogModal != null) _questLogModal.Visible = false; };
+        if (_mapButton != null) _mapButton.Pressed += ToggleWorldMap;
+        if (_worldMapCloseButton != null) _worldMapCloseButton.Pressed += () => { if (_worldMapModal != null) _worldMapModal.Visible = false; };
         if (_npcQuestActionBtn != null) _npcQuestActionBtn.Pressed += OnNPCQuestActionPressed;
+
+        if (_filterAllBtn != null) _filterAllBtn.Pressed += () => SetQuestFilter("all");
+        if (_filterActiveBtn != null) _filterActiveBtn.Pressed += () => SetQuestFilter("active");
+        if (_filterCompletedBtn != null) _filterCompletedBtn.Pressed += () => SetQuestFilter("completed");
+        if (_filterLoreBtn != null) _filterLoreBtn.Pressed += () => SetQuestFilter("lore");
+
+        if (_trackQuestBtn != null) _trackQuestBtn.Pressed += OnTrackQuestPressed;
+        if (_showOnMapBtn != null) _showOnMapBtn.Pressed += OnShowOnMapPressed;
+
+        if (_hubTravelBtn != null) _hubTravelBtn.Pressed += () => TravelToRegion("res://scenes/HubTown.tscn");
+        if (_wildernessTravelBtn != null) _wildernessTravelBtn.Pressed += () => TravelToRegion("res://scenes/ValleyOfAshes.tscn");
+        if (_cryptTravelBtn != null) _cryptTravelBtn.Pressed += () => TravelToRegion("res://scenes/Main.tscn");
+        if (_catacombsTravelBtn != null) _catacombsTravelBtn.Pressed += () => TravelToRegion("res://scenes/Catacombs.tscn");
 
         if (_shopCloseButton != null)
         {
@@ -251,6 +310,15 @@ public partial class GraveboundHUD : CanvasLayer
             {
                 if (_waypointModal != null) _waypointModal.Visible = false;
                 GetTree().ChangeSceneToFile("res://scenes/HubTown.tscn");
+            };
+        }
+
+        if (_destWildernessBtn != null)
+        {
+            _destWildernessBtn.Pressed += () =>
+            {
+                if (_waypointModal != null) _waypointModal.Visible = false;
+                GetTree().ChangeSceneToFile("res://scenes/ValleyOfAshes.tscn");
             };
         }
 
@@ -365,6 +433,23 @@ public partial class GraveboundHUD : CanvasLayer
             prog.StatsChanged += RefreshCharacterStatsUI;
             prog.StatsChanged += RefreshInventoryUI;
             RefreshXP(prog.CurrentXP, prog.XPRequiredForNextLevel, prog.Level);
+        }
+
+        var qm = Quests.QuestManager.Instance;
+        if (qm != null)
+        {
+            qm.QuestUpdated += (id) =>
+            {
+                RefreshQuestBox();
+                if (_questLogModal != null && _questLogModal.Visible) RefreshQuestLogUI();
+                if (_worldMapModal != null && _worldMapModal.Visible) RefreshWorldMapUI();
+            };
+            qm.TrackedQuestChanged += (id) =>
+            {
+                RefreshQuestBox();
+                if (_worldMapModal != null && _worldMapModal.Visible) RefreshWorldMapUI();
+            };
+            RefreshQuestBox();
         }
     }
 
@@ -661,8 +746,22 @@ public partial class GraveboundHUD : CanvasLayer
             return;
         }
 
+        if (@event.IsActionPressed("toggle_world_map"))
+        {
+            ToggleWorldMap();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
         if (@event.IsActionPressed("ui_cancel"))
         {
+            if (_worldMapModal != null && _worldMapModal.Visible)
+            {
+                _worldMapModal.Visible = false;
+                GetViewport().SetInputAsHandled();
+                return;
+            }
+
             if (_questLogModal != null && _questLogModal.Visible)
             {
                 _questLogModal.Visible = false;
@@ -811,6 +910,33 @@ public partial class GraveboundHUD : CanvasLayer
         OpenShop(_shopTitleLabel?.Text ?? "", "", _greetingLabel?.Text ?? "", _currentShopWares, _currentNPCQuestId, _shopContentHBox?.Visible ?? true);
     }
 
+    public void RefreshQuestBox()
+    {
+        var qm = Quests.QuestManager.Instance;
+        if (qm == null) return;
+
+        var q = qm.GetTrackedQuest();
+        if (q != null)
+        {
+            string status = q.IsCompleted
+                ? "✔ Виконано! Зверніться до: " + q.Giver
+                : (q.IsReadyToTurnIn
+                    ? "✦ Готово до здачі! (" + q.Giver + ")"
+                    : (q.IsAccepted
+                        ? $"• Прогрес: {q.CurrentAmount} / {q.TargetAmount}\n• Локація: {q.TargetLocation}"
+                        : $"• Доступно у: {q.Giver}\n• Локація: {q.TargetLocation}"));
+
+            if (_questTitleLabel != null) _questTitleLabel.Text = $"📜 {q.Title}";
+            if (_questObjectiveLabel != null) _questObjectiveLabel.Text = $"{q.ObjectiveShort}\n{status}";
+        }
+    }
+
+    public void SetQuestFilter(string filter)
+    {
+        _currentQuestFilter = filter;
+        RefreshQuestLogUI();
+    }
+
     public void ToggleQuestLog()
     {
         if (_questLogModal == null) return;
@@ -821,6 +947,7 @@ public partial class GraveboundHUD : CanvasLayer
             if (_characterModal != null) _characterModal.Visible = false;
             if (_shopModal != null) _shopModal.Visible = false;
             if (_waypointModal != null) _waypointModal.Visible = false;
+            if (_worldMapModal != null) _worldMapModal.Visible = false;
             RefreshQuestLogUI();
         }
     }
@@ -830,37 +957,64 @@ public partial class GraveboundHUD : CanvasLayer
         var qm = Quests.QuestManager.Instance;
         if (qm == null) return;
 
+        // Update tab button highlights
+        if (_filterAllBtn != null) _filterAllBtn.Modulate = _currentQuestFilter == "all" ? new Color(1f, 0.9f, 0.4f) : new Color(0.7f, 0.7f, 0.7f);
+        if (_filterActiveBtn != null) _filterActiveBtn.Modulate = _currentQuestFilter == "active" ? new Color(1f, 0.9f, 0.4f) : new Color(0.7f, 0.7f, 0.7f);
+        if (_filterCompletedBtn != null) _filterCompletedBtn.Modulate = _currentQuestFilter == "completed" ? new Color(1f, 0.9f, 0.4f) : new Color(0.7f, 0.7f, 0.7f);
+        if (_filterLoreBtn != null) _filterLoreBtn.Modulate = _currentQuestFilter == "lore" ? new Color(0.4f, 0.85f, 1.0f) : new Color(0.7f, 0.7f, 0.7f);
+
         // Quests List
         if (_questsList != null)
         {
             foreach (Node child in _questsList.GetChildren()) child.QueueFree();
 
             var allQuests = qm.GetAllQuests();
-            foreach (var q in allQuests)
+            System.Collections.Generic.List<Quests.QuestData> filteredQuests;
+            if (_currentQuestFilter == "active")
+                filteredQuests = qm.GetActiveQuests();
+            else if (_currentQuestFilter == "completed")
+                filteredQuests = qm.GetCompletedQuests();
+            else if (_currentQuestFilter == "lore")
+                filteredQuests = new System.Collections.Generic.List<Quests.QuestData>();
+            else
+                filteredQuests = allQuests;
+
+            if (filteredQuests.Count == 0 && _currentQuestFilter != "lore")
+            {
+                var emptyLbl = new Label();
+                emptyLbl.Text = "(Немає завдань у цій категорії)";
+                emptyLbl.Modulate = new Color(0.6f, 0.6f, 0.6f);
+                _questsList.AddChild(emptyLbl);
+            }
+
+            foreach (var q in filteredQuests)
             {
                 var quest = q;
                 var btn = new Button();
                 btn.CustomMinimumSize = new Vector2(0, 32);
                 btn.AddThemeFontSizeOverride("font_size", 12);
 
+                bool isTracked = quest.Id == Quests.QuestManager.TrackedQuestId;
+                string pinPrefix = isTracked ? "📌 " : "";
+
                 if (quest.IsCompleted)
                 {
-                    btn.Text = $"✔ {quest.Title} (Виконано)";
+                    btn.Text = $"{pinPrefix}✔ {quest.Title} (Виконано)";
                     btn.Modulate = new Color(0.4f, 0.95f, 0.5f);
                 }
                 else if (quest.IsReadyToTurnIn)
                 {
-                    btn.Text = $"✦ {quest.Title} (Здати!)";
+                    btn.Text = $"{pinPrefix}✦ {quest.Title} (Здати!)";
                     btn.Modulate = new Color(1.0f, 0.85f, 0.2f);
                 }
                 else if (quest.IsAccepted)
                 {
-                    btn.Text = $"• {quest.Title} ({quest.CurrentAmount}/{quest.TargetAmount})";
+                    btn.Text = $"{pinPrefix}• {quest.Title} ({quest.CurrentAmount}/{quest.TargetAmount})";
                     btn.Modulate = new Color(0.9f, 0.9f, 0.9f);
                 }
                 else
                 {
-                    btn.Text = $"[!] {quest.Title} (Доступно)";
+                    btn.Text = $"{pinPrefix}[!] {quest.Title} (Доступно)";
                     btn.Modulate = new Color(0.7f, 0.7f, 0.7f);
                 }
 
@@ -899,24 +1053,207 @@ public partial class GraveboundHUD : CanvasLayer
                 _loreList.AddChild(btn);
             }
         }
+
+        // Auto-select active or tracked quest if nothing selected
+        if (!string.IsNullOrEmpty(_selectedQuestId))
+        {
+            var selQuest = qm.GetQuest(_selectedQuestId);
+            if (selQuest != null) SelectQuestDetail(selQuest);
+        }
+        else
+        {
+            var tracked = qm.GetTrackedQuest();
+            if (tracked != null) SelectQuestDetail(tracked);
+        }
     }
 
     private void SelectQuestDetail(Quests.QuestData q)
     {
+        _selectedQuestId = q.Id;
         if (_detailTitle != null) _detailTitle.Text = $"📜 {q.Title} (Квестодавець: {q.Giver})";
         if (_questDetailLabel != null)
         {
             string status = q.IsCompleted ? "✔ СТАТУС: ЗАВЕРШЕНО" : (q.IsReadyToTurnIn ? "✦ СТАТУС: ГОТОВО ДО ЗДАЧІ" : (q.IsAccepted ? $"⏳ СТАТУС: У ПРОЦЕСІ ({q.CurrentAmount} / {q.TargetAmount})" : "✦ СТАТУС: ДОСТУПНО У КВЕСТОДАВЦЯ"));
             string rewardItem = q.RewardItem != null ? $"\n• Предмет: {q.RewardItem.ItemName} ({q.RewardItem.Rarity})" : "";
 
-            _questDetailLabel.Text = $"{q.Description}\n\n{status}\n\nНАГОРОДА:\n• Золото: {q.RewardGold} 💰\n• Досвід: {q.RewardXP} XP{rewardItem}\n\nСЮЖЕТНІ ХРОНІКИ:\n{q.LoreSnippet}";
+            _questDetailLabel.Text = $"{q.Description}\n\n{status}\n• Локація: {q.TargetLocation}\n• Завдання: {q.ObjectiveShort}\n\nНАГОРОДА:\n• Золото: {q.RewardGold} 💰\n• Досвід: {q.RewardXP} XP{rewardItem}\n\nСЮЖЕТНІ ХРОНІКИ:\n{q.LoreSnippet}";
+        }
+
+        if (_trackQuestBtn != null)
+        {
+            bool isTracked = q.Id == Quests.QuestManager.TrackedQuestId;
+            _trackQuestBtn.Text = isTracked ? "✔ ВІДСТЕЖУЄТЬСЯ" : "📌 ВІДСТЕЖУВАТИ КВЕСТ";
+            _trackQuestBtn.Modulate = isTracked ? new Color(0.4f, 1.0f, 0.6f) : new Color(0.95f, 0.85f, 0.5f);
         }
     }
 
     private void SelectLoreDetail(string title, string text)
     {
+        _selectedQuestId = "";
         if (_detailTitle != null) _detailTitle.Text = $"📖 {title}";
         if (_questDetailLabel != null) _questDetailLabel.Text = text;
+        if (_trackQuestBtn != null) _trackQuestBtn.Text = "📌 ВІДСТЕЖУВАТИ КВЕСТ";
+    }
+
+    private void OnTrackQuestPressed()
+    {
+        if (string.IsNullOrEmpty(_selectedQuestId)) return;
+        Quests.QuestManager.Instance?.SetTrackedQuest(_selectedQuestId);
+        var q = Quests.QuestManager.Instance?.GetQuest(_selectedQuestId);
+        if (q != null)
+        {
+            ShowToast($"📌 Закріплено завдання: «{q.Title}»", new Color(0.95f, 0.85f, 0.35f));
+            SelectQuestDetail(q);
+            RefreshQuestLogUI();
+        }
+    }
+
+    private void OnShowOnMapPressed()
+    {
+        if (string.IsNullOrEmpty(_selectedQuestId)) return;
+        var q = Quests.QuestManager.Instance?.GetQuest(_selectedQuestId);
+        if (q != null)
+        {
+            OpenWorldMap(q.TargetScene);
+        }
+    }
+
+    public void ToggleWorldMap()
+    {
+        if (_worldMapModal == null) return;
+        _worldMapModal.Visible = !_worldMapModal.Visible;
+        if (_worldMapModal.Visible)
+        {
+            if (_inventoryModal != null) _inventoryModal.Visible = false;
+            if (_characterModal != null) _characterModal.Visible = false;
+            if (_shopModal != null) _shopModal.Visible = false;
+            if (_waypointModal != null) _waypointModal.Visible = false;
+            if (_questLogModal != null) _questLogModal.Visible = false;
+            RefreshWorldMapUI();
+        }
+    }
+
+    public void OpenWorldMap(string? targetScene = null)
+    {
+        if (_worldMapModal == null) return;
+        if (_inventoryModal != null) _inventoryModal.Visible = false;
+        if (_characterModal != null) _characterModal.Visible = false;
+        if (_shopModal != null) _shopModal.Visible = false;
+        if (_waypointModal != null) _waypointModal.Visible = false;
+        if (_questLogModal != null) _questLogModal.Visible = false;
+
+        _worldMapModal.Visible = true;
+        RefreshWorldMapUI(targetScene);
+    }
+
+    public void RefreshWorldMapUI(string? highlightedScene = null)
+    {
+        var curScene = GetTree().CurrentScene;
+        string curSceneName = curScene?.Name ?? "";
+        string curScenePath = curScene?.SceneFilePath ?? "";
+
+        bool isHub = curSceneName == "HubTown" || curScenePath.Contains("HubTown");
+        bool isWilderness = curSceneName == "ValleyOfAshes" || curScenePath.Contains("ValleyOfAshes");
+        bool isCrypt = curSceneName == "Main" || curScenePath.Contains("Main");
+        bool isCatacombs = curSceneName == "Catacombs" || curScenePath.Contains("Catacombs");
+
+        var trackedQuest = Quests.QuestManager.Instance?.GetTrackedQuest();
+        string questTarget = highlightedScene ?? trackedQuest?.TargetScene ?? "";
+
+        // Update Hub Status
+        if (_hubStatusBadge != null)
+        {
+            if (isHub)
+            {
+                _hubStatusBadge.Text = "[ 📍 ВИ ТУТ ]";
+                _hubStatusBadge.Modulate = new Color(0.35f, 1.0f, 0.6f);
+            }
+            else if (questTarget.Contains("HubTown"))
+            {
+                _hubStatusBadge.Text = "[ 📌 ЦІЛЬ ЗАВДАННЯ ]";
+                _hubStatusBadge.Modulate = new Color(1.0f, 0.85f, 0.25f);
+            }
+            else
+            {
+                _hubStatusBadge.Text = "[ Безпечний Хаб ]";
+                _hubStatusBadge.Modulate = new Color(1.0f, 0.9f, 0.4f);
+            }
+        }
+
+        // Update Wilderness Status
+        if (_wildernessStatusBadge != null)
+        {
+            if (isWilderness)
+            {
+                _wildernessStatusBadge.Text = "[ 📍 ВИ ТУТ ]";
+                _wildernessStatusBadge.Modulate = new Color(0.35f, 1.0f, 0.6f);
+            }
+            else if (questTarget.Contains("ValleyOfAshes"))
+            {
+                _wildernessStatusBadge.Text = "[ 📌 ЦІЛЬ ЗАВДАННЯ ]";
+                _wildernessStatusBadge.Modulate = new Color(1.0f, 0.85f, 0.25f);
+            }
+            else
+            {
+                _wildernessStatusBadge.Text = "[ Відкритий Світ ]";
+                _wildernessStatusBadge.Modulate = new Color(0.5f, 0.9f, 0.65f);
+            }
+        }
+
+        // Update Crypt Status
+        if (_cryptStatusBadge != null)
+        {
+            if (isCrypt)
+            {
+                _cryptStatusBadge.Text = "[ 📍 ВИ ТУТ ]";
+                _cryptStatusBadge.Modulate = new Color(0.35f, 1.0f, 0.6f);
+            }
+            else if (questTarget.Contains("Main"))
+            {
+                _cryptStatusBadge.Text = "[ 📌 ЦІЛЬ ЗАВДАННЯ ]";
+                _cryptStatusBadge.Modulate = new Color(1.0f, 0.85f, 0.25f);
+            }
+            else
+            {
+                _cryptStatusBadge.Text = "[ Рівень 1 ]";
+                _cryptStatusBadge.Modulate = new Color(0.95f, 0.85f, 0.6f);
+            }
+        }
+
+        // Update Catacombs Status
+        if (_catacombsStatusBadge != null)
+        {
+            if (isCatacombs)
+            {
+                _catacombsStatusBadge.Text = "[ 📍 ВИ ТУТ ]";
+                _catacombsStatusBadge.Modulate = new Color(0.35f, 1.0f, 0.6f);
+            }
+            else if (questTarget.Contains("Catacombs"))
+            {
+                _catacombsStatusBadge.Text = "[ 📌 ЦІЛЬ ЗАВДАННЯ ]";
+                _catacombsStatusBadge.Modulate = new Color(1.0f, 0.85f, 0.25f);
+            }
+            else
+            {
+                _catacombsStatusBadge.Text = "[ БОС: Рівень 3-5 ]";
+                _catacombsStatusBadge.Modulate = new Color(1.0f, 0.35f, 0.35f);
+            }
+        }
+    }
+
+    private void TravelToRegion(string scenePath)
+    {
+        var curScene = GetTree().CurrentScene;
+        if (curScene != null && curScene.SceneFilePath == scenePath)
+        {
+            ShowToast("Ви вже знаходитесь у цій локації!", new Color(0.9f, 0.85f, 0.4f));
+            if (_worldMapModal != null) _worldMapModal.Visible = false;
+            return;
+        }
+
+        if (_worldMapModal != null) _worldMapModal.Visible = false;
+        Audio.SoundManager.Instance?.PlayAltarChime();
+        GetTree().ChangeSceneToFile(scenePath);
     }
 
     public void RefreshShopUI()
