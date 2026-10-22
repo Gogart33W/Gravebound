@@ -35,6 +35,7 @@ public partial class WaypointStone : Area3D
     public void Interact()
     {
         SoundManager.Instance?.PlayAltarChime();
+        Quests.QuestManager.Instance?.AdvanceQuest("quest_waypoints", 1);
         GraveboundHUD.Instance?.OpenWaypointModal();
     }
 

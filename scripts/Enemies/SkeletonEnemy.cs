@@ -350,6 +350,16 @@ public partial class SkeletonEnemy : CharacterBody3D
         int xp = isBoss ? 250 : (EnemyName.Contains("асасин") ? 45 : 35);
         PlayerProgression.Instance?.AddXP(xp);
 
+        // Advance Quests
+        if (isBoss)
+        {
+            Quests.QuestManager.Instance?.AdvanceQuest("quest_morgul", 1);
+        }
+        else
+        {
+            Quests.QuestManager.Instance?.AdvanceQuest("quest_crypt", 1);
+        }
+
         EmitSignal(SignalName.EnemyDied, this);
     }
 

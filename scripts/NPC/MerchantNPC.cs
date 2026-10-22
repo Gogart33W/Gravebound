@@ -14,6 +14,8 @@ public partial class MerchantNPC : Area3D
     [Export] public string NPCRole { get; set; } = "Зброяр та Коваль Вартових";
     [Export(PropertyHint.MultilineText)]
     public string Greeting { get; set; } = "«Вітаю тебе, Могилонароджений. Мій молот ще пам'ятає, як кувати сталь проти скверни Мор-Гула. Поглянь на мої клинки та броню...»";
+    [Export] public string QuestId { get; set; } = "";
+    [Export] public bool HasShop { get; set; } = true;
 
     public List<ItemData> Wares { get; private set; } = new();
 
@@ -31,10 +33,11 @@ public partial class MerchantNPC : Area3D
         _glow = GetNodeOrNull<OmniLight3D>("Glow");
         _animPlayer = FindAnimationPlayer(this);
 
-        if (_nameLabel != null)
+        UpdatePromptLabel();
+
+        if (Quests.QuestManager.Instance != null)
         {
-            _nameLabel.Text = $"[{NPCRole}]\n{NPCName}\n[E: Говорити]";
-            _nameLabel.Modulate = new Color(1.0f, 0.85f, 0.35f);
+            Quests.QuestManager.Instance.QuestUpdated += (id) => UpdatePromptLabel();
         }
 
         if (_animPlayer != null && _animPlayer.HasAnimation("Idle"))
@@ -150,10 +153,45 @@ public partial class MerchantNPC : Area3D
         }
     }
 
+    public void UpdatePromptLabel()
+    {
+        if (_nameLabel == null) return;
+
+        if (!string.IsNullOrEmpty(QuestId) && Quests.QuestManager.Instance != null)
+        {
+            var q = Quests.QuestManager.Instance.GetQuest(QuestId);
+            if (q != null)
+            {
+                if (q.IsReadyToTurnIn)
+                {
+                    _nameLabel.Text = $"[?] [{NPCRole}]\n{NPCName}\n[E: Здати завдання!]";
+                    _nameLabel.Modulate = new Color(0.35f, 1.0f, 0.6f);
+                    return;
+                }
+                if (!q.IsAccepted)
+                {
+                    _nameLabel.Text = $"[!] [{NPCRole}]\n{NPCName}\n[E: Нове завдання!]";
+                    _nameLabel.Modulate = new Color(1.0f, 0.85f, 0.2f);
+                    return;
+                }
+                if (q.IsAccepted && !q.IsCompleted)
+                {
+                    _nameLabel.Text = $"[{NPCRole}]\n{NPCName}\n«{q.Title}»: {q.CurrentAmount}/{q.TargetAmount}";
+                    _nameLabel.Modulate = new Color(0.85f, 0.85f, 0.85f);
+                    return;
+                }
+            }
+        }
+
+        string actionText = HasShop ? "Торгівля / Розмова" : "Говорити";
+        _nameLabel.Text = $"[{NPCRole}]\n{NPCName}\n[E: {actionText}]";
+        _nameLabel.Modulate = new Color(1.0f, 0.85f, 0.35f);
+    }
+
     public void Interact()
     {
         SoundManager.Instance?.PlayAltarChime();
-        GraveboundHUD.Instance?.OpenShop(NPCName, NPCRole, Greeting, Wares);
+        GraveboundHUD.Instance?.OpenShop(NPCName, NPCRole, Greeting, Wares, QuestId, HasShop);
     }
 
     private void OnBodyEntered(Node3D body)

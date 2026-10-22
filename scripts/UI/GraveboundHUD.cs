@@ -85,6 +85,23 @@ public partial class GraveboundHUD : CanvasLayer
     private Button? _destCatacombsBtn;
     private Button? _waypointCloseButton;
 
+    // Quest Log & Lore UI
+    private PanelContainer? _questLogModal;
+    private Button? _questButton;
+    private Button? _questLogCloseButton;
+    private VBoxContainer? _questsList;
+    private VBoxContainer? _loreList;
+    private Label? _detailTitle;
+    private Label? _questDetailLabel;
+
+    // NPC Dialog & Quest section in ShopModal
+    private PanelContainer? _npcQuestSection;
+    private Label? _npcQuestTitle;
+    private Label? _npcQuestDesc;
+    private Button? _npcQuestActionBtn;
+    private HBoxContainer? _shopContentHBox;
+    private string _currentNPCQuestId = "";
+
     [Signal] public delegate void ContinuePressedEventHandler();
 
     public bool IsModalOpen =>
@@ -93,7 +110,8 @@ public partial class GraveboundHUD : CanvasLayer
         (_inventoryModal != null && _inventoryModal.Visible) ||
         (_characterModal != null && _characterModal.Visible) ||
         (_shopModal != null && _shopModal.Visible) ||
-        (_waypointModal != null && _waypointModal.Visible);
+        (_waypointModal != null && _waypointModal.Visible) ||
+        (_questLogModal != null && _questLogModal.Visible);
 
     public override void _EnterTree()
     {
@@ -174,6 +192,11 @@ public partial class GraveboundHUD : CanvasLayer
         _playerItemsList = GetNodeOrNull<VBoxContainer>("Control/Center/ShopModal/VBox/ContentHBox/PlayerBagVBox/PlayerScroll/PlayerItemsList");
         _waresList = GetNodeOrNull<VBoxContainer>("Control/Center/ShopModal/VBox/ContentHBox/MerchantWaresVBox/WaresScroll/WaresList");
         _shopCloseButton = GetNodeOrNull<Button>("Control/Center/ShopModal/VBox/ShopCloseButton");
+        _shopContentHBox = GetNodeOrNull<HBoxContainer>("Control/Center/ShopModal/VBox/ContentHBox");
+        _npcQuestSection = GetNodeOrNull<PanelContainer>("Control/Center/ShopModal/VBox/QuestSection");
+        _npcQuestTitle = GetNodeOrNull<Label>("Control/Center/ShopModal/VBox/QuestSection/QuestVBox/NPCQuestTitle");
+        _npcQuestDesc = GetNodeOrNull<Label>("Control/Center/ShopModal/VBox/QuestSection/QuestVBox/NPCQuestDesc");
+        _npcQuestActionBtn = GetNodeOrNull<Button>("Control/Center/ShopModal/VBox/QuestSection/QuestVBox/NPCQuestActionBtn");
 
         // Waypoint nodes
         _waypointModal = GetNodeOrNull<PanelContainer>("Control/Center/WaypointModal");
@@ -181,6 +204,15 @@ public partial class GraveboundHUD : CanvasLayer
         _destCryptBtn = GetNodeOrNull<Button>("Control/Center/WaypointModal/VBox/DestCryptBtn");
         _destCatacombsBtn = GetNodeOrNull<Button>("Control/Center/WaypointModal/VBox/DestCatacombsBtn");
         _waypointCloseButton = GetNodeOrNull<Button>("Control/Center/WaypointModal/VBox/WaypointCloseButton");
+
+        // Quest Log nodes
+        _questButton = GetNodeOrNull<Button>("Control/BottomBar/ButtonsHBox/QuestButton");
+        _questLogModal = GetNodeOrNull<PanelContainer>("Control/Center/QuestLogModal");
+        _questLogCloseButton = GetNodeOrNull<Button>("Control/Center/QuestLogModal/VBox/QuestLogCloseButton");
+        _questsList = GetNodeOrNull<VBoxContainer>("Control/Center/QuestLogModal/VBox/ContentHBox/LeftVBox/QuestsScroll/QuestsList");
+        _loreList = GetNodeOrNull<VBoxContainer>("Control/Center/QuestLogModal/VBox/ContentHBox/LeftVBox/LoreScroll/LoreList");
+        _detailTitle = GetNodeOrNull<Label>("Control/Center/QuestLogModal/VBox/ContentHBox/RightVBox/DetailTitle");
+        _questDetailLabel = GetNodeOrNull<Label>("Control/Center/QuestLogModal/VBox/ContentHBox/RightVBox/DetailScroll/DetailLabel");
 
         if (_loreModal != null) _loreModal.Visible = false;
         if (_deathScreen != null) _deathScreen.Visible = false;
@@ -190,7 +222,12 @@ public partial class GraveboundHUD : CanvasLayer
         if (_characterModal != null) _characterModal.Visible = false;
         if (_shopModal != null) _shopModal.Visible = false;
         if (_waypointModal != null) _waypointModal.Visible = false;
+        if (_questLogModal != null) _questLogModal.Visible = false;
         if (_lootToastLabel != null) _lootToastLabel.Visible = false;
+
+        if (_questButton != null) _questButton.Pressed += ToggleQuestLog;
+        if (_questLogCloseButton != null) _questLogCloseButton.Pressed += () => { if (_questLogModal != null) _questLogModal.Visible = false; };
+        if (_npcQuestActionBtn != null) _npcQuestActionBtn.Pressed += OnNPCQuestActionPressed;
 
         if (_shopCloseButton != null)
         {
@@ -617,8 +654,22 @@ public partial class GraveboundHUD : CanvasLayer
             return;
         }
 
+        if (@event.IsActionPressed("toggle_quest_log"))
+        {
+            ToggleQuestLog();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
         if (@event.IsActionPressed("ui_cancel"))
         {
+            if (_questLogModal != null && _questLogModal.Visible)
+            {
+                _questLogModal.Visible = false;
+                GetViewport().SetInputAsHandled();
+                return;
+            }
+
             if (_shopModal != null && _shopModal.Visible)
             {
                 _shopModal.Visible = false;
@@ -656,20 +707,216 @@ public partial class GraveboundHUD : CanvasLayer
         }
     }
 
-    public void OpenShop(string npcName, string role, string greeting, System.Collections.Generic.List<ItemData> wares)
+    public void OpenShop(string npcName, string role, string greeting, System.Collections.Generic.List<ItemData> wares, string questId = "", bool hasShop = true)
     {
         if (_inventoryModal != null) _inventoryModal.Visible = false;
         if (_characterModal != null) _characterModal.Visible = false;
         if (_loreModal != null) _loreModal.Visible = false;
         if (_waypointModal != null) _waypointModal.Visible = false;
+        if (_questLogModal != null) _questLogModal.Visible = false;
 
         _currentShopWares = wares;
-        if (_shopTitleLabel != null) _shopTitleLabel.Text = $"🏪 {npcName.ToUpper()} — {role}";
+        _currentNPCQuestId = questId;
+
+        string headerPrefix = hasShop ? "🏪" : "📜";
+        if (_shopTitleLabel != null) _shopTitleLabel.Text = $"{headerPrefix} {npcName.ToUpper()} — {role}";
         if (_greetingLabel != null) _greetingLabel.Text = greeting;
 
-        RefreshShopUI();
+        // Configure Quest Section if questId provided
+        if (!string.IsNullOrEmpty(questId) && Quests.QuestManager.Instance != null)
+        {
+            var q = Quests.QuestManager.Instance.GetQuest(questId);
+            if (q != null && _npcQuestSection != null)
+            {
+                _npcQuestSection.Visible = true;
+                if (_npcQuestTitle != null) _npcQuestTitle.Text = $"📜 Завдання: «{q.Title}»";
+
+                if (q.IsCompleted)
+                {
+                    if (_npcQuestDesc != null) _npcQuestDesc.Text = "✦ Завдання успішно виконано! Дякую тобі за вірну службу Вартовим.";
+                    if (_npcQuestActionBtn != null)
+                    {
+                        _npcQuestActionBtn.Text = "✔ ЗАВДАННЯ ВИКОНАНО";
+                        _npcQuestActionBtn.Disabled = true;
+                    }
+                }
+                else if (q.IsReadyToTurnIn)
+                {
+                    string itemInfo = q.RewardItem != null ? $" | + {q.RewardItem.ItemName}" : "";
+                    if (_npcQuestDesc != null) _npcQuestDesc.Text = $"{q.Description}\n\nНАГОРОДА: +{q.RewardGold} 💰 Золота | +{q.RewardXP} XP{itemInfo}";
+                    if (_npcQuestActionBtn != null)
+                    {
+                        _npcQuestActionBtn.Text = "✦ ЗДАТИ ЗАВДАННЯ ТА ОТРИМАТИ НАГОРОДУ";
+                        _npcQuestActionBtn.Disabled = false;
+                        _npcQuestActionBtn.Modulate = new Color(0.3f, 1f, 0.6f);
+                    }
+                }
+                else if (q.IsAccepted)
+                {
+                    if (_npcQuestDesc != null) _npcQuestDesc.Text = $"{q.Description}\n\nПоточний прогрес: {q.CurrentAmount} / {q.TargetAmount}";
+                    if (_npcQuestActionBtn != null)
+                    {
+                        _npcQuestActionBtn.Text = $"⏳ У ПРОЦЕСІ ({q.CurrentAmount} / {q.TargetAmount})";
+                        _npcQuestActionBtn.Disabled = true;
+                        _npcQuestActionBtn.Modulate = new Color(0.85f, 0.85f, 0.85f);
+                    }
+                }
+                else
+                {
+                    string itemInfo = q.RewardItem != null ? $" | + {q.RewardItem.ItemName}" : "";
+                    if (_npcQuestDesc != null) _npcQuestDesc.Text = $"{q.Description}\n\nНАГОРОДА: +{q.RewardGold} 💰 Золота | +{q.RewardXP} XP{itemInfo}";
+                    if (_npcQuestActionBtn != null)
+                    {
+                        _npcQuestActionBtn.Text = "✦ ПРИЙНЯТИ ЗАВДАННЯ";
+                        _npcQuestActionBtn.Disabled = false;
+                        _npcQuestActionBtn.Modulate = new Color(1f, 0.85f, 0.3f);
+                    }
+                }
+            }
+        }
+        else if (_npcQuestSection != null)
+        {
+            _npcQuestSection.Visible = false;
+        }
+
+        if (_shopContentHBox != null)
+        {
+            _shopContentHBox.Visible = hasShop;
+        }
+
+        if (hasShop)
+        {
+            RefreshShopUI();
+        }
 
         if (_shopModal != null) _shopModal.Visible = true;
+    }
+
+    private void OnNPCQuestActionPressed()
+    {
+        if (string.IsNullOrEmpty(_currentNPCQuestId) || Quests.QuestManager.Instance == null) return;
+        var qm = Quests.QuestManager.Instance;
+        var q = qm.GetQuest(_currentNPCQuestId);
+        if (q == null) return;
+
+        if (!q.IsAccepted)
+        {
+            qm.AcceptQuest(_currentNPCQuestId);
+        }
+        else if (q.IsReadyToTurnIn)
+        {
+            qm.CompleteQuest(_currentNPCQuestId);
+        }
+
+        OpenShop(_shopTitleLabel?.Text ?? "", "", _greetingLabel?.Text ?? "", _currentShopWares, _currentNPCQuestId, _shopContentHBox?.Visible ?? true);
+    }
+
+    public void ToggleQuestLog()
+    {
+        if (_questLogModal == null) return;
+        _questLogModal.Visible = !_questLogModal.Visible;
+        if (_questLogModal.Visible)
+        {
+            if (_inventoryModal != null) _inventoryModal.Visible = false;
+            if (_characterModal != null) _characterModal.Visible = false;
+            if (_shopModal != null) _shopModal.Visible = false;
+            if (_waypointModal != null) _waypointModal.Visible = false;
+            RefreshQuestLogUI();
+        }
+    }
+
+    public void RefreshQuestLogUI()
+    {
+        var qm = Quests.QuestManager.Instance;
+        if (qm == null) return;
+
+        // Quests List
+        if (_questsList != null)
+        {
+            foreach (Node child in _questsList.GetChildren()) child.QueueFree();
+
+            var allQuests = qm.GetAllQuests();
+            foreach (var q in allQuests)
+            {
+                var quest = q;
+                var btn = new Button();
+                btn.CustomMinimumSize = new Vector2(0, 32);
+                btn.AddThemeFontSizeOverride("font_size", 12);
+
+                if (quest.IsCompleted)
+                {
+                    btn.Text = $"✔ {quest.Title} (Виконано)";
+                    btn.Modulate = new Color(0.4f, 0.95f, 0.5f);
+                }
+                else if (quest.IsReadyToTurnIn)
+                {
+                    btn.Text = $"✦ {quest.Title} (Здати!)";
+                    btn.Modulate = new Color(1.0f, 0.85f, 0.2f);
+                }
+                else if (quest.IsAccepted)
+                {
+                    btn.Text = $"• {quest.Title} ({quest.CurrentAmount}/{quest.TargetAmount})";
+                    btn.Modulate = new Color(0.9f, 0.9f, 0.9f);
+                }
+                else
+                {
+                    btn.Text = $"[!] {quest.Title} (Доступно)";
+                    btn.Modulate = new Color(0.7f, 0.7f, 0.7f);
+                }
+
+                btn.Pressed += () => SelectQuestDetail(quest);
+                _questsList.AddChild(btn);
+            }
+        }
+
+        // Lore List
+        if (_loreList != null)
+        {
+            foreach (Node child in _loreList.GetChildren()) child.QueueFree();
+
+            var allQuests = qm.GetAllQuests();
+            foreach (var q in allQuests)
+            {
+                var quest = q;
+                bool unlocked = qm.IsLoreUnlocked(quest.Id) || quest.IsAccepted;
+                var btn = new Button();
+                btn.CustomMinimumSize = new Vector2(0, 28);
+                btn.AddThemeFontSizeOverride("font_size", 11);
+
+                if (unlocked)
+                {
+                    btn.Text = $"📖 {quest.LoreTitle}";
+                    btn.Modulate = new Color(0.35f, 0.85f, 1.0f);
+                    btn.Pressed += () => SelectLoreDetail(quest.LoreTitle, quest.LoreSnippet);
+                }
+                else
+                {
+                    btn.Text = "🔒 [Запечатаний сувій лору]";
+                    btn.Modulate = new Color(0.5f, 0.5f, 0.5f);
+                    btn.Pressed += () => SelectLoreDetail("Запечатаний магічний сувій", "Виконайте сюжетне завдання у світі Валґарду, щоб розшифрувати цей фрагмент стародавнього літопису.");
+                }
+
+                _loreList.AddChild(btn);
+            }
+        }
+    }
+
+    private void SelectQuestDetail(Quests.QuestData q)
+    {
+        if (_detailTitle != null) _detailTitle.Text = $"📜 {q.Title} (Квестодавець: {q.Giver})";
+        if (_questDetailLabel != null)
+        {
+            string status = q.IsCompleted ? "✔ СТАТУС: ЗАВЕРШЕНО" : (q.IsReadyToTurnIn ? "✦ СТАТУС: ГОТОВО ДО ЗДАЧІ" : (q.IsAccepted ? $"⏳ СТАТУС: У ПРОЦЕСІ ({q.CurrentAmount} / {q.TargetAmount})" : "✦ СТАТУС: ДОСТУПНО У КВЕСТОДАВЦЯ"));
+            string rewardItem = q.RewardItem != null ? $"\n• Предмет: {q.RewardItem.ItemName} ({q.RewardItem.Rarity})" : "";
+
+            _questDetailLabel.Text = $"{q.Description}\n\n{status}\n\nНАГОРОДА:\n• Золото: {q.RewardGold} 💰\n• Досвід: {q.RewardXP} XP{rewardItem}\n\nСЮЖЕТНІ ХРОНІКИ:\n{q.LoreSnippet}";
+        }
+    }
+
+    private void SelectLoreDetail(string title, string text)
+    {
+        if (_detailTitle != null) _detailTitle.Text = $"📖 {title}";
+        if (_questDetailLabel != null) _questDetailLabel.Text = text;
     }
 
     public void RefreshShopUI()

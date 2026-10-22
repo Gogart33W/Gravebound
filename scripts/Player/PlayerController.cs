@@ -50,6 +50,8 @@ public partial class PlayerController : CharacterBody3D
     private bool _hasTargetDestination;
     private SkeletonEnemy? _targetEnemy;
     private CryptAltar? _targetAltar;
+    private NPC.MerchantNPC? _targetMerchant;
+    private Environment.WaypointStone? _targetWaypoint;
     private Vector3 _initialSpawnPos;
 
     public static PlayerController? Instance { get; private set; }
@@ -129,6 +131,13 @@ public partial class PlayerController : CharacterBody3D
             InputMap.ActionAddEvent("town_portal", keyT);
         }
 
+        if (!InputMap.HasAction("toggle_quest_log"))
+        {
+            InputMap.AddAction("toggle_quest_log");
+            var keyL = new InputEventKey { Keycode = Key.L, PhysicalKeycode = Key.L };
+            InputMap.ActionAddEvent("toggle_quest_log", keyL);
+        }
+
         Callable.From(ActorSetup).CallDeferred();
         PlayAnimation("Idle");
     }
@@ -179,6 +188,13 @@ public partial class PlayerController : CharacterBody3D
         if (@event.IsActionPressed("toggle_character_stats"))
         {
             GraveboundHUD.Instance?.ToggleCharacterStats();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        if (@event.IsActionPressed("toggle_quest_log"))
+        {
+            GraveboundHUD.Instance?.ToggleQuestLog();
             GetViewport().SetInputAsHandled();
             return;
         }
@@ -300,8 +316,16 @@ public partial class PlayerController : CharacterBody3D
 
             if (collider is CryptAltar altar)
             {
-                _targetAltar = altar;
                 _targetEnemy = null;
+                _targetMerchant = null;
+                _targetWaypoint = null;
+                if (altar.IsInRange(this))
+                {
+                    altar.Inspect();
+                    _targetAltar = null;
+                    return;
+                }
+                _targetAltar = altar;
                 MoveTo(altar.GlobalPosition, showMarker: !isDragging);
                 return;
             }
@@ -310,6 +334,8 @@ public partial class PlayerController : CharacterBody3D
             {
                 _targetAltar = null;
                 _targetEnemy = null;
+                _targetMerchant = null;
+                _targetWaypoint = null;
                 var targetPos = new Vector3(portal.GlobalPosition.X, 0f, portal.GlobalPosition.Z);
                 MoveTo(targetPos, showMarker: !isDragging);
                 return;
@@ -319,22 +345,40 @@ public partial class PlayerController : CharacterBody3D
             {
                 _targetAltar = null;
                 _targetEnemy = null;
+                _targetMerchant = null;
+                _targetWaypoint = null;
                 MoveTo(worldItem.GlobalPosition, showMarker: !isDragging);
                 return;
             }
 
-            if (collider is MerchantNPC merchant)
+            if (collider is NPC.MerchantNPC merchant)
             {
                 _targetAltar = null;
                 _targetEnemy = null;
+                _targetWaypoint = null;
+                if (GlobalPosition.DistanceTo(merchant.GlobalPosition) <= 2.6f)
+                {
+                    merchant.Interact();
+                    _targetMerchant = null;
+                    return;
+                }
+                _targetMerchant = merchant;
                 MoveTo(merchant.GlobalPosition, showMarker: !isDragging);
                 return;
             }
 
-            if (collider is WaypointStone waypoint)
+            if (collider is Environment.WaypointStone waypoint)
             {
                 _targetAltar = null;
                 _targetEnemy = null;
+                _targetMerchant = null;
+                if (GlobalPosition.DistanceTo(waypoint.GlobalPosition) <= 2.8f)
+                {
+                    waypoint.Interact();
+                    _targetWaypoint = null;
+                    return;
+                }
+                _targetWaypoint = waypoint;
                 MoveTo(waypoint.GlobalPosition, showMarker: !isDragging);
                 return;
             }
@@ -352,6 +396,8 @@ public partial class PlayerController : CharacterBody3D
         {
             _targetEnemy = null;
             _targetAltar = null;
+            _targetMerchant = null;
+            _targetWaypoint = null;
             MoveTo((Vector3)worldResult["position"], showMarker: !isDragging);
             return;
         }
@@ -363,6 +409,8 @@ public partial class PlayerController : CharacterBody3D
         {
             _targetEnemy = null;
             _targetAltar = null;
+            _targetMerchant = null;
+            _targetWaypoint = null;
             MoveTo(planeHit.Value, showMarker: !isDragging);
         }
     }
@@ -654,7 +702,35 @@ public partial class PlayerController : CharacterBody3D
             }
         }
 
-        // 3. Movement towards destination
+        // 3. Merchant NPC Proximity Check
+        if (_targetMerchant != null)
+        {
+            if (GlobalPosition.DistanceTo(_targetMerchant.GlobalPosition) <= 2.4f)
+            {
+                _targetMerchant.Interact();
+                _targetMerchant = null;
+                _hasTargetDestination = false;
+                StopMoving(dt);
+                CharacterMotion.Move(this, ref _fallSpeed, dt);
+                return;
+            }
+        }
+
+        // 4. Waypoint Stone Proximity Check
+        if (_targetWaypoint != null)
+        {
+            if (GlobalPosition.DistanceTo(_targetWaypoint.GlobalPosition) <= 2.6f)
+            {
+                _targetWaypoint.Interact();
+                _targetWaypoint = null;
+                _hasTargetDestination = false;
+                StopMoving(dt);
+                CharacterMotion.Move(this, ref _fallSpeed, dt);
+                return;
+            }
+        }
+
+        // 5. Movement towards destination
         if (_hasTargetDestination)
         {
             Vector3 diff = _targetDestination - GlobalPosition;

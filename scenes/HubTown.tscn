@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" path="res://scripts/Core/GameManager.cs" id="1_manager"]
 [ext_resource type="PackedScene" path="res://assets/models/environment/crypt_arena.glb" id="2_arena"]
@@ -13,6 +13,8 @@
 [ext_resource type="Script" path="res://scripts/Environment/WaypointStone.cs" id="11_waypoint"]
 [ext_resource type="PackedScene" path="res://assets/models/characters/Barbarian.glb" id="12_barbarian"]
 [ext_resource type="PackedScene" path="res://assets/models/characters/warrior.glb" id="13_warrior"]
+[ext_resource type="PackedScene" path="res://assets/models/characters/Knight.glb" id="14_knight"]
+[ext_resource type="Script" path="res://scripts/Quests/QuestManager.cs" id="15_quests"]
 
 [sub_resource type="Environment" id="Environment_hub"]
 background_mode = 1
@@ -64,7 +66,7 @@ height = 0.5
 script = ExtResource("1_manager")
 ChapterTitle = "Табір: Притулок Останньої Варти"
 IsHubTown = true
-HubQuestObjective = "• Торгуйте з Ковалем Бранном та Алхіміком Селеною\n• Використайте Обеліск швидкого переміщення [E]\n• Натисніть [T], щоб повернутися сюди з будь-якого місця"
+HubQuestObjective = "• Торгуйте з Ковалем Бранном та Алхіміком Селеною\n• Поговоріть зі Старійшиною Ольгердом щодо завдань [L]\n• Використайте Обеліск швидкого переміщення [E] або [T]"
 
 [node name="SoundManager" type="Node" parent="."]
 script = ExtResource("7_sound")
@@ -74,6 +76,9 @@ script = ExtResource("8_inventory")
 
 [node name="PlayerProgression" type="Node" parent="."]
 script = ExtResource("9_progression")
+
+[node name="QuestManager" type="Node" parent="."]
+script = ExtResource("15_quests")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_hub")
@@ -98,6 +103,40 @@ light_energy = 3.6
 omni_range = 12.0
 omni_attenuation = 1.3
 
+[node name="ElderOlgerd" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, -2.8)
+collision_layer = 8
+collision_mask = 2
+script = ExtResource("10_merchant")
+NPCName = "Старійшина Ольгерд"
+NPCRole = "Хранитель Літописів Варти"
+Greeting = "«Вітаю тебе, пробуджений воїне. Ти повстав у найтемнішу добу нашої землі. Скверна Мор-Гула охопила склепи та катакомби, але давня мережа обелісків усе ще пов'язує нас. Досліди світ, очисти Валґард і запиши своє ім'я у вічні хроніки.»"
+QuestId = "quest_waypoints"
+HasShop = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ElderOlgerd"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+shape = SubResource("CylinderShape3D_npc")
+
+[node name="Knight" parent="ElderOlgerd" instance=ExtResource("14_knight")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="NameLabel" type="Label3D" parent="ElderOlgerd"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4, 0)
+billboard = 1
+no_depth_test = true
+text = "[!] [Хранитель Літописів]\nСтарійшина Ольгерд\n[E: Завдання та Лор]"
+font_size = 38
+outline_size = 6
+outline_modulate = Color(0.05, 0.05, 0.05, 1)
+modulate = Color(1, 0.85, 0.3, 1)
+
+[node name="Glow" type="OmniLight3D" parent="ElderOlgerd"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+light_color = Color(1, 0.85, 0.3, 1)
+light_energy = 2.4
+omni_range = 7.0
+
 [node name="BlacksmithBrann" type="Area3D" parent="."]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -5.2, 0.2, 0)
 collision_layer = 8
@@ -105,7 +144,9 @@ collision_mask = 2
 script = ExtResource("10_merchant")
 NPCName = "Коваль Бранн"
 NPCRole = "Зброяр Вартових"
-Greeting = "«Вітаю тебе, Могилонароджений. Мій молот ще пам'ятає, як кувати сталь проти скверни Мор-Гула. Поглянь на мої клинки та міцні лати...»"
+Greeting = "«Вітаю тебе, Могилонароджений. Мій молот ще пам'ятає, як кувати сталь проти скверни Мор-Гула. Поглянь на мої клинки та міцні лати... Якщо знайдеш у Катакомбах зачарований меч — принеси мені, я викую тобі гідну броню!»"
+QuestId = "quest_steel"
+HasShop = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="BlacksmithBrann"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
@@ -118,7 +159,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4, 0)
 billboard = 1
 no_depth_test = true
-text = "[Зброяр Вартових]\nКоваль Бранн\n[E: Торгівля]"
+text = "[!] [Зброяр Вартових]\nКоваль Бранн\n[E: Торгівля / Квест]"
 font_size = 38
 outline_size = 6
 outline_modulate = Color(0.05, 0.05, 0.05, 1)
@@ -137,7 +178,9 @@ collision_mask = 2
 script = ExtResource("10_merchant")
 NPCName = "Алхімік Селена"
 NPCRole = "Травниця та Зіллярка"
-Greeting = "«Ти повернувся живим із глибин... Візьми мої цілющі зілля та чарівні персні — вони збережуть твоє життя від прокляття попелу.»"
+Greeting = "«Ти повернувся живим із глибин... Візьми мої цілющі зілля та чарівні персні — вони збережуть твоє життя від прокляття попелу. Допоможи мені подолати Архімага Мор-Гула, і я віддам тобі найрідкісніший перстень вогню!»"
+QuestId = "quest_morgul"
+HasShop = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="AlchemistSelena"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
@@ -150,7 +193,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4, 0)
 billboard = 1
 no_depth_test = true
-text = "[Травниця та Зіллярка]\nАлхімік Селена\n[E: Торгівля]"
+text = "[!] [Травниця та Зіллярка]\nАлхімік Селена\n[E: Торгівля / Квест]"
 font_size = 38
 outline_size = 6
 outline_modulate = Color(0.05, 0.05, 0.05, 1)

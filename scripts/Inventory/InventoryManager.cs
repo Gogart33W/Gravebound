@@ -89,6 +89,12 @@ public partial class InventoryManager : Node
                 Slots[i] = item;
                 EmitSignal(SignalName.InventoryChanged);
                 EmitSignal(SignalName.ItemPickedUp, item.ItemName, item.GetRarityColor().ToHtml());
+
+                if (item.SlotType == ItemSlotType.Weapon && (item.Rarity >= ItemRarity.Magic || item.Id.Contains("sword")))
+                {
+                    Quests.QuestManager.Instance?.AdvanceQuest("quest_steel", 1);
+                }
+
                 return true;
             }
         }

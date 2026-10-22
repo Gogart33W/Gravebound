@@ -15,6 +15,7 @@
 [ext_resource type="Script" path="res://scripts/Inventory/InventoryManager.cs" id="13_inventory"]
 [ext_resource type="Script" path="res://scripts/Player/PlayerProgression.cs" id="14_progression"]
 [ext_resource type="Script" path="res://scripts/Environment/WaypointStone.cs" id="15_waypoint"]
+[ext_resource type="Script" path="res://scripts/Quests/QuestManager.cs" id="16_quests"]
 
 [sub_resource type="Environment" id="Environment_catacombs"]
 background_mode = 1
@@ -99,6 +100,9 @@ script = ExtResource("13_inventory")
 
 [node name="PlayerProgression" type="Node" parent="."]
 script = ExtResource("14_progression")
+
+[node name="QuestManager" type="Node" parent="."]
+script = ExtResource("16_quests")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_catacombs")
