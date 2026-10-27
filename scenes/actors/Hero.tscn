@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/actors/HeroController.cs" id="1_controller"]
 [ext_resource type="PackedScene" path="res://assets/models/hero/hero_character.glb" id="2_character_model"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://assets/models/hero/hero_animations.glb" id="4_animations"]
 [ext_resource type="PackedScene" path="res://assets/models/hero/hero_locomotion.fbx" id="5_locomotion"]
 [ext_resource type="Script" path="res://scripts/combat/HealthComponent.cs" id="6_health"]
+[ext_resource type="Script" path="res://scripts/combat/ResourceComponent.cs" id="7_resource"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_hero"]
 radius = 0.4
@@ -56,3 +57,8 @@ LocomotionSource = ExtResource("5_locomotion")
 [node name="HealthComponent" type="Node" parent="."]
 script = ExtResource("6_health")
 MaxHealth = 100.0
+
+[node name="ResourceComponent" type="Node" parent="."]
+script = ExtResource("7_resource")
+MaxResource = 100.0
+ResourceRegenRate = 12.0
