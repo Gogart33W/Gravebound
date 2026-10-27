@@ -14,3 +14,12 @@ obj/
 # Temporary / scratch files
 _scratch/
 *.tmp
+.notes/
+
+# OS / Export / Archive ignores
+*.zip
+*.blend1
+export/
+*.apk
+Thumbs.db
+.DS_Store
