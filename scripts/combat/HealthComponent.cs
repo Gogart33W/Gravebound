@@ -45,6 +45,18 @@ public partial class HealthComponent : Node
         EmitSignal(SignalName.HealthChanged, CurrentHealth, MaxHealth);
     }
 
+    public void SetMaxHealth(float newMax, bool healDifference = true)
+    {
+        float diff = newMax - MaxHealth;
+        MaxHealth = newMax;
+        if (healDifference && diff > 0.0f)
+        {
+            CurrentHealth += diff;
+        }
+        CurrentHealth = Mathf.Clamp(CurrentHealth, 0.0f, MaxHealth);
+        EmitSignal(SignalName.HealthChanged, CurrentHealth, MaxHealth);
+    }
+
     public void ResetHealth()
     {
         CurrentHealth = MaxHealth;

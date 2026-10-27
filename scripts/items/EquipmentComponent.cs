@@ -67,5 +67,18 @@ public partial class EquipmentComponent : Node
         return null;
     }
 
+    public float GetTotalStatModifier(string statKey)
+    {
+        float total = 0.0f;
+        foreach (var item in _equipped.Values)
+        {
+            if (item?.StatModifiers != null && item.StatModifiers.TryGetValue(statKey, out float value))
+            {
+                total += value;
+            }
+        }
+        return total;
+    }
+
     public Godot.Collections.Dictionary<int, ItemData> GetAllEquipped() => _equipped;
 }

@@ -25,6 +25,8 @@ public partial class HeroController : CharacterBody3D, IDamageable
     public ResourceComponent? ResourceComp => _resourceComponent;
     public InventoryComponent? Inventory => _inventoryComponent;
     public EquipmentComponent? Equipment => _equipmentComponent;
+    public Node3D? CurrentAttackTarget => _attackTarget;
+    public float BaseAttackDamage => _baseAttackDamage;
 
     private NavigationAgent3D _navAgent = null!;
     private HeroAnimator? _animator;
@@ -51,6 +53,12 @@ public partial class HeroController : CharacterBody3D, IDamageable
     private float _invulnerableTimeRemaining;
     private float _castLockTimer;
 
+    private float _baseAttackDamage;
+    private float _baseMoveSpeed;
+    private float _baseMaxHealth;
+
+    public float BonusAttackPower => _equipmentComponent?.GetTotalStatModifier("attack_power") ?? 0.0f;
+
     public override void _Ready()
     {
         AddToGroup("Hero");
@@ -61,11 +69,43 @@ public partial class HeroController : CharacterBody3D, IDamageable
         _inventoryComponent = GetNodeOrNull<InventoryComponent>("InventoryComponent");
         _equipmentComponent = GetNodeOrNull<EquipmentComponent>("EquipmentComponent");
 
+        _baseAttackDamage = AttackDamage;
+        _baseMoveSpeed = MoveSpeed;
+        _baseMaxHealth = _healthComponent?.MaxHealth ?? 100.0f;
+
+        if (_equipmentComponent != null)
+        {
+            _equipmentComponent.EquipmentUpdated += UpdateEquipmentStats;
+            UpdateEquipmentStats();
+        }
+
         SkillQ ??= new Skill_MeleeCleave();
         SkillW ??= new Skill_Dash();
 
         _navAgent.PathDesiredDistance = 0.6f;
         _navAgent.TargetDesiredDistance = 0.6f;
+    }
+
+    public void UpdateEquipmentStats()
+    {
+        if (_equipmentComponent == null)
+        {
+            return;
+        }
+
+        float bonusAttack = _equipmentComponent.GetTotalStatModifier("attack_power");
+        AttackDamage = _baseAttackDamage + bonusAttack;
+
+        float bonusSpeed = _equipmentComponent.GetTotalStatModifier("move_speed");
+        MoveSpeed = _baseMoveSpeed + bonusSpeed;
+
+        float bonusHealth = _equipmentComponent.GetTotalStatModifier("max_health");
+        if (_healthComponent != null)
+        {
+            _healthComponent.SetMaxHealth(_baseMaxHealth + bonusHealth);
+        }
+
+        GD.Print($"[HeroController] Stats updated -> ATK: {AttackDamage} (Base {_baseAttackDamage} + {bonusAttack}), MaxHP: {_healthComponent?.MaxHealth}");
     }
 
     public override void _UnhandledInput(InputEvent @event)
