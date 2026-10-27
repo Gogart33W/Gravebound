@@ -9,7 +9,7 @@ public partial class HeroController : CharacterBody3D
     [Export] public uint GroundCollisionMask { get; set; } = 1u;
 
     private NavigationAgent3D _navAgent = null!;
-    private bool _isHoldingLmb;
+    private bool _isNavigating;
 
     public override void _Ready()
     {
@@ -21,24 +21,20 @@ public partial class HeroController : CharacterBody3D
 
     public override void _UnhandledInput(InputEvent @event)
     {
-        if (@event is InputEventMouseButton mouseButton && mouseButton.ButtonIndex == MouseButton.Left)
+        if (@event is InputEventMouseButton mouseButton && mouseButton.ButtonIndex == MouseButton.Left && mouseButton.Pressed)
         {
-            _isHoldingLmb = mouseButton.Pressed;
-            if (_isHoldingLmb)
-            {
-                UpdateNavigationTarget();
-            }
+            SetTargetFromMouse();
         }
     }
 
     public override void _PhysicsProcess(double delta)
     {
-        if (_isHoldingLmb)
+        if (Input.IsMouseButtonPressed(MouseButton.Left))
         {
-            UpdateNavigationTarget();
+            SetTargetFromMouse();
         }
 
-        if (_navAgent.IsNavigationFinished())
+        if (!_isNavigating)
         {
             Velocity = new Vector3(0.0f, Velocity.Y, 0.0f);
             ApplyGravity(delta);
@@ -46,11 +42,21 @@ public partial class HeroController : CharacterBody3D
             return;
         }
 
-        Vector3 nextPathPosition = _navAgent.GetNextPathPosition();
-        Vector3 direction = nextPathPosition - GlobalPosition;
+        Vector3 nextPathPos = _navAgent.GetNextPathPosition();
+
+        if (_navAgent.IsNavigationFinished())
+        {
+            _isNavigating = false;
+            Velocity = new Vector3(0.0f, Velocity.Y, 0.0f);
+            ApplyGravity(delta);
+            MoveAndSlide();
+            return;
+        }
+
+        Vector3 direction = nextPathPos - GlobalPosition;
         direction.Y = 0.0f;
 
-        if (direction.LengthSquared() > 0.001f)
+        if (direction.LengthSquared() > 0.01f)
         {
             direction = direction.Normalized();
             Velocity = new Vector3(direction.X * MoveSpeed, Velocity.Y, direction.Z * MoveSpeed);
@@ -69,15 +75,7 @@ public partial class HeroController : CharacterBody3D
         MoveAndSlide();
     }
 
-    private void ApplyGravity(double delta)
-    {
-        if (!IsOnFloor())
-        {
-            Velocity += Vector3.Down * 9.8f * (float)delta;
-        }
-    }
-
-    private void UpdateNavigationTarget()
+    private void SetTargetFromMouse()
     {
         Camera3D? camera = GetViewport().GetCamera3D();
         if (camera == null)
@@ -96,7 +94,17 @@ public partial class HeroController : CharacterBody3D
         var result = spaceState.IntersectRay(query);
         if (result.Count > 0 && result.TryGetValue("position", out Variant hitPosVariant))
         {
-            _navAgent.TargetPosition = hitPosVariant.AsVector3();
+            Vector3 hitPos = hitPosVariant.AsVector3();
+            _navAgent.TargetPosition = hitPos;
+            _isNavigating = true;
+        }
+    }
+
+    private void ApplyGravity(double delta)
+    {
+        if (!IsOnFloor())
+        {
+            Velocity += Vector3.Down * 9.8f * (float)delta;
         }
     }
 }
