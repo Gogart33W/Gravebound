@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <radialGradient id="woodRadial" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#795548"/>
+      <stop offset="70%" stop-color="#4e342e"/>
+      <stop offset="100%" stop-color="#33211b"/>
+    </radialGradient>
+    <linearGradient id="ironRim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#90a4ae"/>
+      <stop offset="100%" stop-color="#455a64"/>
+    </linearGradient>
+  </defs>
+  <!-- Shield outer rim -->
+  <circle cx="32" cy="32" r="27" fill="url(#woodRadial)" stroke="url(#ironRim)" stroke-width="4.5"/>
+  <!-- Iron cross braces -->
+  <line x1="7" y1="32" x2="57" y2="32" stroke="url(#ironRim)" stroke-width="3"/>
+  <line x1="32" y1="7" x2="32" y2="57" stroke="url(#ironRim)" stroke-width="3"/>
+  <!-- Center Boss -->
+  <circle cx="32" cy="32" r="9" fill="url(#ironRim)" stroke="#263238" stroke-width="1.5"/>
+  <circle cx="30" cy="30" r="3" fill="#cfd8dc" opacity="0.6"/>
+  <!-- Rivets -->
+  <circle cx="32" cy="9" r="1.5" fill="#eceff1"/>
+  <circle cx="32" cy="55" r="1.5" fill="#eceff1"/>
+  <circle cx="9" cy="32" r="1.5" fill="#eceff1"/>
+  <circle cx="55" cy="32" r="1.5" fill="#eceff1"/>
+</svg>
