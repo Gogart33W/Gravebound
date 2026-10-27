@@ -120,76 +120,7 @@ public partial class Skill_MeleeCleave : SkillBase
             }
         }
 
-        SpawnCrescentSlashEffect(caster, casterPos, forward);
         GD.Print($"[Skill_MeleeCleave] Cast Spin Cleave! Enemies hit: {hitCount}");
         return true;
-    }
-
-    private void SpawnCrescentSlashEffect(Node3D caster, Vector3 position, Vector3 forward)
-    {
-        var vfx = new Node3D();
-        // Position at chest/waist height where the sword swings
-        vfx.Position = position + (Vector3.Up * 0.9f);
-        float yaw = Mathf.Atan2(forward.X, forward.Z);
-        vfx.Rotation = new Vector3(Mathf.DegToRad(-5.0f), yaw, 0.0f);
-
-        var slashMesh = new MeshInstance3D();
-        slashMesh.Mesh = CreateSlashArcMesh(radius: Range * 0.75f, width: 0.75f, arcDeg: ArcDegrees, segments: 24);
-
-        var mat = new StandardMaterial3D
-        {
-            ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-            BlendMode = BaseMaterial3D.BlendModeEnum.Add,
-            AlbedoColor = new Color(1.0f, 0.6f, 0.15f, 0.95f),
-            Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-            CullMode = BaseMaterial3D.CullModeEnum.Disabled
-        };
-        slashMesh.MaterialOverride = mat;
-        vfx.AddChild(slashMesh);
-
-        caster.GetTree().Root.AddChild(vfx);
-
-        var tween = vfx.CreateTween();
-        tween.SetParallel(true);
-        tween.TweenProperty(slashMesh, "scale", new Vector3(1.3f, 1.0f, 1.3f), 0.3f);
-        tween.TweenProperty(mat, "albedo_color:a", 0.0f, 0.3f);
-        tween.Chain().TweenCallback(Callable.From(() => vfx.QueueFree()));
-    }
-
-    private static ArrayMesh CreateSlashArcMesh(float radius, float width, float arcDeg, int segments)
-    {
-        var st = new SurfaceTool();
-        st.Begin(Mesh.PrimitiveType.Triangles);
-        float halfRad = Mathf.DegToRad(arcDeg * 0.5f);
-        float step = (halfRad * 2.0f) / segments;
-
-        for (int i = 0; i < segments; i++)
-        {
-            float a0 = -halfRad + (i * step);
-            float a1 = -halfRad + ((i + 1) * step);
-
-            // Forward in local space is (sin(a), 0, cos(a))
-            var dir0 = new Vector3(Mathf.Sin(a0), 0.0f, Mathf.Cos(a0));
-            var dir1 = new Vector3(Mathf.Sin(a1), 0.0f, Mathf.Cos(a1));
-
-            var out0 = dir0 * (radius + width * 0.5f);
-            var in0 = dir0 * (radius - width * 0.5f);
-            var out1 = dir1 * (radius + width * 0.5f);
-            var in1 = dir1 * (radius - width * 0.5f);
-
-            // Triangle 1
-            st.SetNormal(Vector3.Up);
-            st.AddVertex(out0);
-            st.AddVertex(in0);
-            st.AddVertex(out1);
-
-            // Triangle 2
-            st.SetNormal(Vector3.Up);
-            st.AddVertex(out1);
-            st.AddVertex(in0);
-            st.AddVertex(in1);
-        }
-
-        return st.Commit();
     }
 }

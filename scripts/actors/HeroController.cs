@@ -43,6 +43,7 @@ public partial class HeroController : CharacterBody3D, IDamageable
     private float _dashSpeed;
     private float _dashTimeRemaining;
     private float _invulnerableTimeRemaining;
+    private float _castLockTimer;
 
     public override void _Ready()
     {
@@ -135,6 +136,16 @@ public partial class HeroController : CharacterBody3D, IDamageable
                 _isDashing = false;
                 Velocity = new Vector3(0.0f, Velocity.Y, 0.0f);
             }
+            return;
+        }
+
+        // Handle cast lock (e.g. executing stationary melee cleave)
+        if (_castLockTimer > 0.0f)
+        {
+            _castLockTimer -= dt;
+            Velocity = new Vector3(0.0f, Velocity.Y, 0.0f);
+            ApplyGravity(delta);
+            MoveAndSlide();
             return;
         }
 
@@ -301,7 +312,7 @@ public partial class HeroController : CharacterBody3D, IDamageable
 
     private bool TryCastSkill(SkillBase? skill, ref float cooldownTimer, Vector3? targetOverride = null)
     {
-        if (skill == null || cooldownTimer > 0.0f || _isDashing)
+        if (skill == null || cooldownTimer > 0.0f || _isDashing || _castLockTimer > 0.0f)
         {
             return false;
         }
@@ -319,6 +330,10 @@ public partial class HeroController : CharacterBody3D, IDamageable
             cooldownTimer = skill.Cooldown;
             _isNavigating = false;
             Velocity = new Vector3(0.0f, Velocity.Y, 0.0f);
+            if (skill is not Skill_Dash)
+            {
+                _castLockTimer = 0.45f;
+            }
             return true;
         }
 
@@ -430,6 +445,11 @@ public partial class HeroController : CharacterBody3D, IDamageable
 
     public void MoveTo(Vector3 destination)
     {
+        if (_castLockTimer > 0.0f)
+        {
+            return;
+        }
+
         _attackTarget = null;
         _isSingleAttack = false;
         _currentTarget = destination;
