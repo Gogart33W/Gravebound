@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://scripts/combat/ResourceComponent.cs" id="7_resource"]
 [ext_resource type="Script" path="res://scripts/items/InventoryComponent.cs" id="8_inventory"]
 [ext_resource type="Script" path="res://scripts/items/EquipmentComponent.cs" id="9_equipment"]
+[ext_resource type="Script" path="res://scripts/items/EquipmentVisuals.cs" id="10_visuals"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_hero"]
 radius = 0.4
@@ -33,17 +34,17 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
 [node name="Slot_MainHand" type="BoneAttachment3D" parent="."]
 bone_name = "hand_r"
 use_external_skeleton = true
-external_skeleton = NodePath("CharacterModel/Armature/Skeleton3D")
+external_skeleton = NodePath("../CharacterModel/Armature/Skeleton3D")
 
 [node name="Slot_OffHand" type="BoneAttachment3D" parent="."]
 bone_name = "hand_l"
 use_external_skeleton = true
-external_skeleton = NodePath("CharacterModel/Armature/Skeleton3D")
+external_skeleton = NodePath("../CharacterModel/Armature/Skeleton3D")
 
 [node name="Slot_Head" type="BoneAttachment3D" parent="."]
 bone_name = "Head"
 use_external_skeleton = true
-external_skeleton = NodePath("CharacterModel/Armature/Skeleton3D")
+external_skeleton = NodePath("../CharacterModel/Armature/Skeleton3D")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 root_node = NodePath("../CharacterModel")
@@ -71,3 +72,6 @@ Capacity = 40
 
 [node name="EquipmentComponent" type="Node" parent="."]
 script = ExtResource("9_equipment")
+
+[node name="EquipmentVisuals" type="Node" parent="."]
+script = ExtResource("10_visuals")

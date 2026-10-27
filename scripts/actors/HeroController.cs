@@ -25,6 +25,7 @@ public partial class HeroController : CharacterBody3D, IDamageable
     public ResourceComponent? ResourceComp => _resourceComponent;
     public InventoryComponent? Inventory => _inventoryComponent;
     public EquipmentComponent? Equipment => _equipmentComponent;
+    public EquipmentVisuals? Visuals => _equipmentVisuals;
     public Node3D? CurrentAttackTarget => _attackTarget;
     public float BaseAttackDamage => _baseAttackDamage;
 
@@ -34,6 +35,7 @@ public partial class HeroController : CharacterBody3D, IDamageable
     private ResourceComponent? _resourceComponent;
     private InventoryComponent? _inventoryComponent;
     private EquipmentComponent? _equipmentComponent;
+    private EquipmentVisuals? _equipmentVisuals;
 
     private bool _isNavigating;
     private Vector3 _currentTarget;
@@ -68,6 +70,7 @@ public partial class HeroController : CharacterBody3D, IDamageable
         _resourceComponent = GetNodeOrNull<ResourceComponent>("ResourceComponent");
         _inventoryComponent = GetNodeOrNull<InventoryComponent>("InventoryComponent");
         _equipmentComponent = GetNodeOrNull<EquipmentComponent>("EquipmentComponent");
+        _equipmentVisuals = GetNodeOrNull<EquipmentVisuals>("EquipmentVisuals");
 
         _baseAttackDamage = AttackDamage;
         _baseMoveSpeed = MoveSpeed;
