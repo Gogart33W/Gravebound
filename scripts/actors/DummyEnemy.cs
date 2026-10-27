@@ -8,6 +8,8 @@ public partial class DummyEnemy : CharacterBody3D, IDamageable
     [Export] public bool ResetsOnDeath { get; set; } = true;
     [Export] public float ResetDelay { get; set; } = 1.0f;
 
+    public bool IsDead => _health?.IsDead ?? false;
+
     private HealthComponent _health = null!;
     private MeshInstance3D? _mesh;
     private StandardMaterial3D? _originalMaterial;

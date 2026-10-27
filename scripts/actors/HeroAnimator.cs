@@ -6,7 +6,7 @@ public partial class HeroAnimator : Node
 {
     [Export] public StringName IdleAnim { get; set; } = "Idle_Shield";
     [Export] public StringName RunAnim { get; set; } = "Walk";
-    [Export] public StringName AttackAnim { get; set; } = "Sword_Attack";
+    [Export] public StringName AttackAnim { get; set; } = "Sword_Regular_A";
     [Export] public float SpeedThreshold { get; set; } = 0.1f;
     [Export] public PackedScene? AnimationSource { get; set; }
     [Export] public PackedScene? LocomotionSource { get; set; }

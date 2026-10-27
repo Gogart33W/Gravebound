@@ -19,6 +19,8 @@ public partial class HeroController : CharacterBody3D, IDamageable
     private Vector3 _currentTarget;
     private Node3D? _attackTarget;
     private float _attackCooldownTimer;
+    private bool _isHoldingLmb;
+    private bool _isSingleAttack;
 
     public override void _Ready()
     {
@@ -33,9 +35,17 @@ public partial class HeroController : CharacterBody3D, IDamageable
 
     public override void _UnhandledInput(InputEvent @event)
     {
-        if (@event is InputEventMouseButton mouseButton && mouseButton.ButtonIndex == MouseButton.Left && mouseButton.Pressed)
+        if (@event is InputEventMouseButton mouseButton && mouseButton.ButtonIndex == MouseButton.Left)
         {
-            SetTargetFromMouse();
+            if (mouseButton.Pressed)
+            {
+                _isHoldingLmb = true;
+                SetTargetFromMouse(isClick: true);
+            }
+            else
+            {
+                _isHoldingLmb = false;
+            }
         }
     }
 
@@ -46,17 +56,37 @@ public partial class HeroController : CharacterBody3D, IDamageable
             _attackCooldownTimer -= (float)delta;
         }
 
-        // Continuous movement/targeting while holding LMB (only if not targeting specific enemy)
-        if (Input.IsMouseButtonPressed(MouseButton.Left) && _attackTarget == null)
+        // Check if attack target is valid and still alive
+        if (_attackTarget != null)
         {
-            SetTargetFromMouse();
+            bool isAlive = IsInstanceValid(_attackTarget);
+            if (isAlive)
+            {
+                if (_attackTarget is DummyEnemy dummy)
+                {
+                    isAlive = !dummy.IsDead && dummy.Visible;
+                }
+                else
+                {
+                    var health = _attackTarget.GetNodeOrNull<HealthComponent>("HealthComponent");
+                    isAlive = health == null || !health.IsDead;
+                }
+            }
+
+            if (!isAlive)
+            {
+                // Target is dead or despawned: instantly DROP focus! No hitting the air!
+                _attackTarget = null;
+                _isSingleAttack = false;
+                _isNavigating = false;
+                Velocity = new Vector3(0.0f, Velocity.Y, 0.0f);
+            }
         }
 
-        // If target was destroyed or freed, clear reference
-        if (_attackTarget != null && !IsInstanceValid(_attackTarget))
+        // If holding LMB without an enemy target, follow cursor on ground continuously
+        if (_isHoldingLmb && _attackTarget == null)
         {
-            _attackTarget = null;
-            _isNavigating = false;
+            SetTargetFromMouse(isClick: false);
         }
 
         if (!_isNavigating && _attackTarget == null)
@@ -92,15 +122,30 @@ public partial class HeroController : CharacterBody3D, IDamageable
                 Rotation = new Vector3(Rotation.X, newAngle, Rotation.Z);
             }
 
-            // Perform primary attack if off cooldown
-            if (_attackCooldownTimer <= 0.0f)
+            // Attack logic: continue if holding LMB or perform single requested attack
+            if (_isHoldingLmb || _isSingleAttack)
             {
-                _attackCooldownTimer = AttackCooldown;
-                _animator?.PlayAttack();
-
-                if (_attackTarget is IDamageable damageable)
+                if (_attackCooldownTimer <= 0.0f)
                 {
-                    damageable.TakeDamage(AttackDamage);
+                    _attackCooldownTimer = AttackCooldown;
+                    _animator?.PlayAttack();
+
+                    if (_attackTarget is IDamageable damageable)
+                    {
+                        damageable.TakeDamage(AttackDamage);
+                    }
+
+                    // If single click attack, complete and release target
+                    if (_isSingleAttack)
+                    {
+                        _isSingleAttack = false;
+                        _attackTarget = null;
+                    }
+                    else if (_attackTarget is DummyEnemy dummy && (dummy.IsDead || !dummy.Visible))
+                    {
+                        // Died from this hit while holding LMB: immediately clear target
+                        _attackTarget = null;
+                    }
                 }
             }
 
@@ -153,7 +198,7 @@ public partial class HeroController : CharacterBody3D, IDamageable
         MoveAndSlide();
     }
 
-    private void SetTargetFromMouse()
+    private void SetTargetFromMouse(bool isClick)
     {
         Camera3D? camera = GetViewport().GetCamera3D();
         if (camera == null)
@@ -180,20 +225,29 @@ public partial class HeroController : CharacterBody3D, IDamageable
 
             if (damageable != null && colliderObj is Node3D targetNode3D)
             {
-                AttackTarget(targetNode3D);
-                GD.Print($"[HeroController] Targeted enemy: {targetNode3D.Name} at {_currentTarget}");
+                bool isAlive = true;
+                if (targetNode3D is DummyEnemy dummy)
+                {
+                    isAlive = !dummy.IsDead && dummy.Visible;
+                }
+
+                if (isAlive)
+                {
+                    AttackTarget(targetNode3D, isSingleAttack: isClick && !_isHoldingLmb);
+                    GD.Print($"[HeroController] Targeted enemy: {targetNode3D.Name} at {_currentTarget}");
+                    return;
+                }
             }
-            else
-            {
-                // Clicked on ground or obstacle
-                MoveTo(hitPosVariant.AsVector3());
-            }
+
+            // Clicked on ground or obstacle
+            MoveTo(hitPosVariant.AsVector3());
         }
     }
 
-    public void AttackTarget(Node3D target)
+    public void AttackTarget(Node3D target, bool isSingleAttack = false)
     {
         _attackTarget = target;
+        _isSingleAttack = isSingleAttack;
         _currentTarget = target.GlobalPosition;
         _navAgent.TargetPosition = _currentTarget;
         _isNavigating = true;
@@ -202,6 +256,7 @@ public partial class HeroController : CharacterBody3D, IDamageable
     public void MoveTo(Vector3 destination)
     {
         _attackTarget = null;
+        _isSingleAttack = false;
         _currentTarget = destination;
         _navAgent.TargetPosition = destination;
         _isNavigating = true;

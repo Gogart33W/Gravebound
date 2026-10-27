@@ -49,7 +49,7 @@ root_node = NodePath("../CharacterModel")
 script = ExtResource("3_animator")
 IdleAnim = &"Idle_Shield"
 RunAnim = &"Walk"
-AttackAnim = &"Sword_Attack"
+AttackAnim = &"Sword_Regular_A"
 AnimationSource = ExtResource("4_animations")
 LocomotionSource = ExtResource("5_locomotion")
 
