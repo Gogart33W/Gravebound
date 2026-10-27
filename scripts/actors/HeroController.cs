@@ -10,6 +10,7 @@ public partial class HeroController : CharacterBody3D
 
     private NavigationAgent3D _navAgent = null!;
     private bool _isNavigating;
+    private Vector3 _currentTarget;
 
     public override void _Ready()
     {
@@ -29,6 +30,7 @@ public partial class HeroController : CharacterBody3D
 
     public override void _PhysicsProcess(double delta)
     {
+        // Continuous movement while holding LMB
         if (Input.IsMouseButtonPressed(MouseButton.Left))
         {
             SetTargetFromMouse();
@@ -42,9 +44,9 @@ public partial class HeroController : CharacterBody3D
             return;
         }
 
-        Vector3 nextPathPos = _navAgent.GetNextPathPosition();
-
-        if (_navAgent.IsNavigationFinished())
+        // Check if we arrived at destination
+        float horizontalDistanceToTarget = new Vector2(GlobalPosition.X - _currentTarget.X, GlobalPosition.Z - _currentTarget.Z).Length();
+        if (horizontalDistanceToTarget <= _navAgent.TargetDesiredDistance || _navAgent.IsNavigationFinished())
         {
             _isNavigating = false;
             Velocity = new Vector3(0.0f, Velocity.Y, 0.0f);
@@ -53,10 +55,18 @@ public partial class HeroController : CharacterBody3D
             return;
         }
 
+        Vector3 nextPathPos = _navAgent.GetNextPathPosition();
         Vector3 direction = nextPathPos - GlobalPosition;
         direction.Y = 0.0f;
 
-        if (direction.LengthSquared() > 0.01f)
+        // If next path position is too close to current position, fallback to target direction
+        if (direction.LengthSquared() < 0.01f)
+        {
+            direction = _currentTarget - GlobalPosition;
+            direction.Y = 0.0f;
+        }
+
+        if (direction.LengthSquared() > 0.001f)
         {
             direction = direction.Normalized();
             Velocity = new Vector3(direction.X * MoveSpeed, Velocity.Y, direction.Z * MoveSpeed);
@@ -95,6 +105,7 @@ public partial class HeroController : CharacterBody3D
         if (result.Count > 0 && result.TryGetValue("position", out Variant hitPosVariant))
         {
             Vector3 hitPos = hitPosVariant.AsVector3();
+            _currentTarget = hitPos;
             _navAgent.TargetPosition = hitPos;
             _isNavigating = true;
         }
