@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/ItemData.cs" id="1_item_data"]
+
+[resource]
+script = ExtResource("1_item_data")
+Id = "helmet_skull"
+ItemName = "Crown of the Restless"
+Rarity = 3
+Type = 2
+StatModifiers = {
+"attack_power": 15.0,
+"max_health": 80.0
+}
+Description = "An ancient ceremonial skull helm whispering fragments of forgotten incantations."

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/ItemData.cs" id="1_item_data"]
+
+[resource]
+script = ExtResource("1_item_data")
+Id = "potion_health"
+ItemName = "Lesser Health Draught"
+Rarity = 0
+Type = 5
+StatModifiers = {
+"heal_amount": 50.0
+}
+Description = "A crimson vial brewed from bitter cave moss that closes shallow wounds."

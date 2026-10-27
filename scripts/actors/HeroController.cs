@@ -1,5 +1,6 @@
 using Godot;
 using Gravebound.Combat;
+using Gravebound.Items;
 
 namespace Gravebound.Actors;
 
@@ -10,7 +11,7 @@ public partial class HeroController : CharacterBody3D, IDamageable
     [Export] public float AttackRange { get; set; } = 2.0f;
     [Export] public float AttackCooldown { get; set; } = 0.8f;
     [Export] public float AttackDamage { get; set; } = 25.0f;
-    [Export] public uint CombatRaycastMask { get; set; } = 5u; // Layer 1 (Ground=1) | Layer 3 (Enemies=4)
+    [Export] public uint CombatRaycastMask { get; set; } = 13u; // Layer 1 (Ground=1) | Layer 3 (Enemies=4) | Layer 4 (Items=8)
 
     [Export] public SkillBase? SkillQ { get; set; }
     [Export] public SkillBase? SkillW { get; set; }
@@ -31,6 +32,7 @@ public partial class HeroController : CharacterBody3D, IDamageable
     private bool _isNavigating;
     private Vector3 _currentTarget;
     private Node3D? _attackTarget;
+    private WorldItem? _itemTarget;
     private float _attackCooldownTimer;
     private float _cooldownQTimer;
     private float _cooldownWTimer;
@@ -176,13 +178,28 @@ public partial class HeroController : CharacterBody3D, IDamageable
             }
         }
 
-        // If holding LMB without an enemy target, follow cursor on ground continuously
-        if (_isHoldingLmb && _attackTarget == null)
+        // Check if item target is valid
+        if (_itemTarget != null)
+        {
+            if (!IsInstanceValid(_itemTarget) || _itemTarget.Item == null)
+            {
+                _itemTarget = null;
+                _isNavigating = false;
+            }
+            else
+            {
+                _currentTarget = _itemTarget.GlobalPosition;
+                _navAgent.TargetPosition = _currentTarget;
+            }
+        }
+
+        // If holding LMB without an enemy or item target, follow cursor on ground continuously
+        if (_isHoldingLmb && _attackTarget == null && _itemTarget == null)
         {
             SetTargetFromMouse(isClick: false);
         }
 
-        if (!_isNavigating && _attackTarget == null)
+        if (!_isNavigating && _attackTarget == null && _itemTarget == null)
         {
             Velocity = new Vector3(0.0f, Velocity.Y, 0.0f);
             ApplyGravity(delta);
@@ -196,8 +213,31 @@ public partial class HeroController : CharacterBody3D, IDamageable
             _currentTarget = _attackTarget.GlobalPosition;
             _navAgent.TargetPosition = _currentTarget;
         }
+        else if (_itemTarget != null)
+        {
+            _currentTarget = _itemTarget.GlobalPosition;
+            _navAgent.TargetPosition = _currentTarget;
+        }
 
         float horizontalDistance = new Vector2(GlobalPosition.X - _currentTarget.X, GlobalPosition.Z - _currentTarget.Z).Length();
+
+        // Check if close enough to pick up item target (within 1.5m)
+        if (_itemTarget != null && horizontalDistance <= 1.5f)
+        {
+            _isNavigating = false;
+            Velocity = new Vector3(0.0f, Velocity.Y, 0.0f);
+
+            var pickedItem = _itemTarget.Collect();
+            if (pickedItem != null)
+            {
+                GD.Print($"Picked up {pickedItem.ItemName}");
+            }
+
+            _itemTarget = null;
+            ApplyGravity(delta);
+            MoveAndSlide();
+            return;
+        }
 
         // Check if close enough to attack target enemy
         if (_attackTarget != null && horizontalDistance <= AttackRange)
@@ -349,6 +389,7 @@ public partial class HeroController : CharacterBody3D, IDamageable
         _invulnerableTimeRemaining = invulnerableDuration;
 
         _attackTarget = null;
+        _itemTarget = null;
         _isSingleAttack = false;
         _isNavigating = false;
 
@@ -403,11 +444,23 @@ public partial class HeroController : CharacterBody3D, IDamageable
 
         PhysicsDirectSpaceState3D spaceState = GetWorld3D().DirectSpaceState;
         PhysicsRayQueryParameters3D query = PhysicsRayQueryParameters3D.Create(rayOrigin, rayEnd, CombatRaycastMask);
+        query.CollideWithAreas = true;
 
         var result = spaceState.IntersectRay(query);
         if (result.Count > 0 && result.TryGetValue("position", out Variant hitPosVariant))
         {
             var colliderObj = result["collider"].AsGodotObject();
+
+            // Check if clicked an item / WorldItem
+            WorldItem? worldItem = colliderObj as WorldItem
+                                ?? (colliderObj is Node itemNode ? itemNode.GetParent() as WorldItem : null);
+
+            if (worldItem != null && IsInstanceValid(worldItem) && worldItem.Item != null)
+            {
+                TargetItem(worldItem);
+                GD.Print($"[HeroController] Targeted item: {worldItem.Item.ItemName}");
+                return;
+            }
 
             // Check if clicked an enemy / IDamageable
             IDamageable? damageable = colliderObj as IDamageable
@@ -434,8 +487,25 @@ public partial class HeroController : CharacterBody3D, IDamageable
         }
     }
 
+    public void TargetItem(WorldItem item)
+    {
+        if (_castLockTimer > 0.0f)
+        {
+            return;
+        }
+
+        _attackTarget = null;
+        _isSingleAttack = false;
+        _itemTarget = item;
+        _currentTarget = item.GlobalPosition;
+        _navAgent.TargetPosition = _currentTarget;
+        _isNavigating = true;
+        _animator?.StopOneShot();
+    }
+
     public void AttackTarget(Node3D target, bool isSingleAttack = false)
     {
+        _itemTarget = null;
         _attackTarget = target;
         _isSingleAttack = isSingleAttack;
         _currentTarget = target.GlobalPosition;
@@ -451,6 +521,7 @@ public partial class HeroController : CharacterBody3D, IDamageable
         }
 
         _attackTarget = null;
+        _itemTarget = null;
         _isSingleAttack = false;
         _currentTarget = destination;
         _navAgent.TargetPosition = destination;

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/ItemData.cs" id="1_item_data"]
+
+[resource]
+script = ExtResource("1_item_data")
+Id = "shield_wooden"
+ItemName = "Round Wooden Shield"
+Rarity = 1
+Type = 1
+StatModifiers = {
+"max_health": 40.0
+}
+Description = "Reinforced oak planks capable of deflecting glancing strikes."

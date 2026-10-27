@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/ItemData.cs" id="1_item_data"]
+
+[resource]
+script = ExtResource("1_item_data")
+Id = "sword_rusty"
+ItemName = "Rusty Iron Sword"
+Rarity = 0
+Type = 0
+StatModifiers = {
+"attack_power": 5.0
+}
+Description = "A notched iron blade, dulled by age and crypt dust."
