@@ -47,6 +47,6 @@ root_node = NodePath("../CharacterModel")
 [node name="HeroAnimator" type="Node" parent="."]
 script = ExtResource("3_animator")
 IdleAnim = &"Idle_Shield"
-RunAnim = &"Jog_Fwd"
+RunAnim = &"Walk"
 AnimationSource = ExtResource("4_animations")
 LocomotionSource = ExtResource("5_locomotion")

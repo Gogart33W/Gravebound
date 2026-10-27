@@ -5,7 +5,7 @@ namespace Gravebound.Actors;
 public partial class HeroAnimator : Node
 {
     [Export] public StringName IdleAnim { get; set; } = "Idle_Shield";
-    [Export] public StringName RunAnim { get; set; } = "Jog_Fwd";
+    [Export] public StringName RunAnim { get; set; } = "Walk";
     [Export] public float SpeedThreshold { get; set; } = 0.1f;
     [Export] public PackedScene? AnimationSource { get; set; }
     [Export] public PackedScene? LocomotionSource { get; set; }
@@ -72,6 +72,19 @@ public partial class HeroAnimator : Node
                         if (trackPath.StartsWith("Rig/"))
                         {
                             anim.TrackSetPath(t, new NodePath("Armature/" + trackPath.Substring(4)));
+                        }
+
+                        // Fix FBX 1/100 centimeter scale bug on 3D position tracks
+                        if (anim.TrackGetType(t) == Animation.TrackType.Position3D)
+                        {
+                            for (int k = 0; k < anim.TrackGetKeyCount(t); k++)
+                            {
+                                Vector3 pos = (Vector3)anim.TrackGetKeyValue(t, k);
+                                if (pos != Vector3.Zero && pos.Length() < 0.1f)
+                                {
+                                    anim.TrackSetKeyValue(t, k, pos * 100.0f);
+                                }
+                            }
                         }
                     }
 
