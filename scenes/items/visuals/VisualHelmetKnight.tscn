@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/equipment/helmets/helmet_knight.glb" id="1_model"]
+
+[node name="VisualHelmetKnight" type="Node3D"]
+
+[node name="Model" parent="." instance=ExtResource("1_model")]
+transform = Transform3D(18, 0, 0, 0, 17.606, 3.742, 0, -3.742, 17.606, 0, 0.1, -0.01)

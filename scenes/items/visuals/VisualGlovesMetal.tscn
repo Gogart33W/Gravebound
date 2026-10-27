@@ -1,0 +1,52 @@
+[gd_scene load_steps=7 format=3]
+
+[sub_resource type="StandardMaterial3D" id="Mat_Steel"]
+albedo_color = Color(0.72, 0.75, 0.8, 1)
+metallic = 0.88
+roughness = 0.28
+
+[sub_resource type="StandardMaterial3D" id="Mat_GoldTrim"]
+albedo_color = Color(0.88, 0.72, 0.25, 1)
+metallic = 0.92
+roughness = 0.25
+
+[sub_resource type="StandardMaterial3D" id="Mat_LeatherStrap"]
+albedo_color = Color(0.24, 0.16, 0.11, 1)
+metallic = 0.05
+roughness = 0.75
+
+[sub_resource type="CylinderMesh" id="Mesh_VambraceMain"]
+material = SubResource("Mat_Steel")
+top_radius = 0.052
+bottom_radius = 0.042
+height = 0.18
+radial_segments = 16
+
+[sub_resource type="TorusMesh" id="Mesh_CuffRim"]
+material = SubResource("Mat_GoldTrim")
+inner_radius = 0.048
+outer_radius = 0.054
+rings = 16
+ring_segments = 8
+
+[sub_resource type="BoxMesh" id="Mesh_Ridge"]
+material = SubResource("Mat_GoldTrim")
+size = Vector3(0.015, 0.17, 0.02)
+
+[node name="VisualGlovesMetal" type="Node3D"]
+
+[node name="Vambrace" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.09, 0)
+mesh = SubResource("Mesh_VambraceMain")
+
+[node name="TopRim" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.005, 0)
+mesh = SubResource("Mesh_CuffRim")
+
+[node name="BottomRim" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.82, 0, 0, 0, 1, 0, 0, 0, 0.82, 0, -0.175, 0)
+mesh = SubResource("Mesh_CuffRim")
+
+[node name="FrontRidge" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.09, 0.045)
+mesh = SubResource("Mesh_Ridge")

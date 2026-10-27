@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="helmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b8c0cc"/>
+      <stop offset="50%" stop-color="#6f798a"/>
+      <stop offset="100%" stop-color="#3d4452"/>
+    </linearGradient>
+  </defs>
+  <!-- Skull Dome -->
+  <path d="M16,28 C16,14 22,8 32,8 C42,8 48,14 48,28 L48,46 L38,54 L26,54 L16,46 Z" fill="url(#helmGrad)" stroke="#1a202c" stroke-width="1.8"/>
+  <!-- Visor Eye Slit -->
+  <rect x="20" y="26" width="24" height="4" rx="2" fill="#141820"/>
+  <!-- Breathing Holes -->
+  <circle cx="26" cy="38" r="1.5" fill="#141820"/>
+  <circle cx="32" cy="38" r="1.5" fill="#141820"/>
+  <circle cx="38" cy="38" r="1.5" fill="#141820"/>
+  <circle cx="29" cy="43" r="1.5" fill="#141820"/>
+  <circle cx="35" cy="43" r="1.5" fill="#141820"/>
+  <!-- Gold Crest Ridge -->
+  <path d="M30,8 L34,8 L34,22 L30,22 Z" fill="#e8c045"/>
+</svg>

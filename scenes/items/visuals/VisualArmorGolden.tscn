@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/equipment/armor/armor_golden.fbx" id="1_model"]
+
+[node name="VisualArmorGolden" type="Node3D"]
+
+[node name="Model" parent="." instance=ExtResource("1_model")]
+transform = Transform3D(30.53, 0, 19.077, -4.044, 35.15, 6.471, -18.643, -7.632, 29.808, 0, -0.04, 0.02)

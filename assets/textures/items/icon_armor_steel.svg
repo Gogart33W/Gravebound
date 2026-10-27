@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="steelPlate" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b8c0cc"/>
+      <stop offset="50%" stop-color="#6f798a"/>
+      <stop offset="100%" stop-color="#3d4452"/>
+    </linearGradient>
+    <linearGradient id="goldTrim" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e8c045"/>
+      <stop offset="100%" stop-color="#99751e"/>
+    </linearGradient>
+  </defs>
+  <!-- Breastplate Body -->
+  <path d="M18,12 L26,14 L32,18 L38,14 L46,12 L50,24 L46,46 L40,54 L24,54 L18,46 L14,24 Z" fill="url(#steelPlate)" stroke="#1a202c" stroke-width="1.8"/>
+  <!-- Gorget Neck Rim -->
+  <path d="M24,14 Q32,22 40,14" fill="none" stroke="url(#goldTrim)" stroke-width="2.5"/>
+  <!-- Center Ridge -->
+  <line x1="32" y1="18" x2="32" y2="52" stroke="#252a34" stroke-width="2"/>
+  <!-- Pauldron Accents -->
+  <path d="M12,20 Q16,14 22,13" fill="none" stroke="url(#goldTrim)" stroke-width="2"/>
+  <path d="M52,20 Q48,14 42,13" fill="none" stroke="url(#goldTrim)" stroke-width="2"/>
+  <!-- Lower Trim -->
+  <path d="M22,50 L32,53 L42,50" fill="none" stroke="url(#goldTrim)" stroke-width="2"/>
+</svg>

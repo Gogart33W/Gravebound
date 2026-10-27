@@ -33,16 +33,49 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
 
 [node name="Slot_MainHand" type="BoneAttachment3D" parent="."]
 bone_name = "hand_r"
+bone_idx = 34
 use_external_skeleton = true
 external_skeleton = NodePath("../CharacterModel/Armature/Skeleton3D")
 
 [node name="Slot_OffHand" type="BoneAttachment3D" parent="."]
 bone_name = "hand_l"
+bone_idx = 10
 use_external_skeleton = true
 external_skeleton = NodePath("../CharacterModel/Armature/Skeleton3D")
 
 [node name="Slot_Head" type="BoneAttachment3D" parent="."]
 bone_name = "Head"
+bone_idx = 6
+use_external_skeleton = true
+external_skeleton = NodePath("../CharacterModel/Armature/Skeleton3D")
+
+[node name="Slot_BodyArmor" type="BoneAttachment3D" parent="."]
+bone_name = "spine_03"
+bone_idx = 4
+use_external_skeleton = true
+external_skeleton = NodePath("../CharacterModel/Armature/Skeleton3D")
+
+[node name="Slot_GlovesLeft" type="BoneAttachment3D" parent="."]
+bone_name = "lowerarm_l"
+bone_idx = 9
+use_external_skeleton = true
+external_skeleton = NodePath("../CharacterModel/Armature/Skeleton3D")
+
+[node name="Slot_GlovesRight" type="BoneAttachment3D" parent="."]
+bone_name = "lowerarm_r"
+bone_idx = 33
+use_external_skeleton = true
+external_skeleton = NodePath("../CharacterModel/Armature/Skeleton3D")
+
+[node name="Slot_BootsLeft" type="BoneAttachment3D" parent="."]
+bone_name = "calf_l"
+bone_idx = 56
+use_external_skeleton = true
+external_skeleton = NodePath("../CharacterModel/Armature/Skeleton3D")
+
+[node name="Slot_BootsRight" type="BoneAttachment3D" parent="."]
+bone_name = "calf_r"
+bone_idx = 61
 use_external_skeleton = true
 external_skeleton = NodePath("../CharacterModel/Armature/Skeleton3D")
 

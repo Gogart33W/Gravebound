@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="vambraceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b0b8c6"/>
+      <stop offset="50%" stop-color="#646e7f"/>
+      <stop offset="100%" stop-color="#343b47"/>
+    </linearGradient>
+  </defs>
+  <!-- Left Gauntlet -->
+  <path d="M14,16 L26,14 L28,42 L24,52 L14,50 L12,42 Z" fill="url(#vambraceGrad)" stroke="#1a202c" stroke-width="1.6"/>
+  <line x1="20" y1="15" x2="19" y2="51" stroke="#e8c045" stroke-width="1.8"/>
+  <rect x="12" y="16" width="14" height="4" fill="#e8c045"/>
+  <!-- Right Gauntlet -->
+  <path d="M50,16 L38,14 L36,42 L40,52 L50,50 L52,42 Z" fill="url(#vambraceGrad)" stroke="#1a202c" stroke-width="1.6"/>
+  <line x1="44" y1="15" x2="45" y2="51" stroke="#e8c045" stroke-width="1.8"/>
+  <rect x="38" y="16" width="14" height="4" fill="#e8c045"/>
+</svg>

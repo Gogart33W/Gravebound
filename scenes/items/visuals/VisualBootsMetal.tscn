@@ -1,0 +1,54 @@
+[gd_scene load_steps=8 format=3]
+
+[sub_resource type="StandardMaterial3D" id="Mat_Steel"]
+albedo_color = Color(0.72, 0.75, 0.8, 1)
+metallic = 0.88
+roughness = 0.28
+
+[sub_resource type="StandardMaterial3D" id="Mat_Gold"]
+albedo_color = Color(0.88, 0.72, 0.25, 1)
+metallic = 0.92
+roughness = 0.25
+
+[sub_resource type="StandardMaterial3D" id="Mat_Leather"]
+albedo_color = Color(0.2, 0.14, 0.1, 1)
+metallic = 0.05
+roughness = 0.8
+
+[sub_resource type="CylinderMesh" id="Mesh_ShinGreave"]
+material = SubResource("Mat_Steel")
+top_radius = 0.072
+bottom_radius = 0.054
+height = 0.36
+radial_segments = 16
+
+[sub_resource type="SphereMesh" id="Mesh_PoleynKnee"]
+material = SubResource("Mat_Steel")
+radius = 0.065
+height = 0.08
+
+[sub_resource type="BoxMesh" id="Mesh_FrontRidge"]
+material = SubResource("Mat_Gold")
+size = Vector3(0.016, 0.34, 0.02)
+
+[sub_resource type="BoxMesh" id="Mesh_SabatonFoot"]
+material = SubResource("Mat_Steel")
+size = Vector3(0.09, 0.06, 0.14)
+
+[node name="VisualBootsMetal" type="Node3D"]
+
+[node name="ShinPlate" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.19, 0)
+mesh = SubResource("Mesh_ShinGreave")
+
+[node name="KneePoleyn" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, 0.06)
+mesh = SubResource("Mesh_PoleynKnee")
+
+[node name="ShinRidge" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.19, 0.062)
+mesh = SubResource("Mesh_FrontRidge")
+
+[node name="Sabaton" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, -0.38, 0.06)
+mesh = SubResource("Mesh_SabatonFoot")
