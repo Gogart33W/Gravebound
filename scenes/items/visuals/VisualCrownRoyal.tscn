@@ -5,4 +5,4 @@
 [node name="VisualCrownRoyal" type="Node3D"]
 
 [node name="Model" parent="." instance=ExtResource("1_model")]
-transform = Transform3D(24, 0, 0, 0, 23.475, 4.99, 0, -4.99, 23.475, 0, 0.14, -0.01)
+transform = Transform3D(0.24, 0, 0, 0, 0.2348, 0.0499, 0, -0.0499, 0.2348, 0, 0.12, -0.01)

@@ -5,4 +5,4 @@
 [node name="VisualArmorMetal" type="Node3D"]
 
 [node name="Model" parent="." instance=ExtResource("1_model")]
-transform = Transform3D(30.53, 0, 19.077, -4.044, 35.15, 6.471, -18.643, -7.632, 29.808, 0, -0.04, 0.02)
+transform = Transform3D(0.28834, -0.03129, 0.17744, 0, 0.33483, 0.05904, -0.18017, -0.05007, 0.28396, 0, -0.04, 0.02)

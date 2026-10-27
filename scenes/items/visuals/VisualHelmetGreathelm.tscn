@@ -5,4 +5,4 @@
 [node name="VisualHelmetGreathelm" type="Node3D"]
 
 [node name="Model" parent="." instance=ExtResource("1_model")]
-transform = Transform3D(18, 0, 0, 0, 17.606, 3.742, 0, -3.742, 17.606, 0, 0.1, -0.01)
+transform = Transform3D(0.17, 0, 0, 0, 0.1663, 0.0353, 0, -0.0353, 0.1663, 0, 0.08, -0.01)
