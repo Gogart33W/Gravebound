@@ -1,28 +1,49 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
-[ext_resource type="Script" path="res://scripts/actors/HeroController.cs" id="1_script"]
+[ext_resource type="Script" path="res://scripts/actors/HeroController.cs" id="1_controller"]
+[ext_resource type="PackedScene" path="res://assets/models/hero/hero_character.glb" id="2_character_model"]
+[ext_resource type="Script" path="res://scripts/actors/HeroAnimator.cs" id="3_animator"]
+[ext_resource type="PackedScene" path="res://assets/models/hero/hero_animations.glb" id="4_animations"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_hero"]
-radius = 0.4
-height = 1.8
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_hero"]
 radius = 0.4
 height = 1.8
 
 [node name="Hero" type="CharacterBody3D"]
 collision_layer = 2
 collision_mask = 1
-script = ExtResource("1_script")
+script = ExtResource("1_controller")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("CapsuleShape3D_hero")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
-mesh = SubResource("CapsuleMesh_hero")
-
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
-path_desired_distance = 0.5
-target_desired_distance = 0.5
+path_desired_distance = 0.6
+target_desired_distance = 0.6
+
+[node name="CharacterModel" parent="." instance=ExtResource("2_character_model")]
+
+[node name="Slot_MainHand" type="BoneAttachment3D" parent="."]
+bone_name = "hand_r"
+use_external_skeleton = true
+external_skeleton = NodePath("CharacterModel/Armature/Skeleton3D")
+
+[node name="Slot_OffHand" type="BoneAttachment3D" parent="."]
+bone_name = "hand_l"
+use_external_skeleton = true
+external_skeleton = NodePath("CharacterModel/Armature/Skeleton3D")
+
+[node name="Slot_Head" type="BoneAttachment3D" parent="."]
+bone_name = "Head"
+use_external_skeleton = true
+external_skeleton = NodePath("CharacterModel/Armature/Skeleton3D")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+root_node = NodePath("CharacterModel")
+
+[node name="HeroAnimator" type="Node" parent="."]
+script = ExtResource("3_animator")
+IdleAnim = &"Idle_Shield_Loop"
+RunAnim = &"Walk_Carry_Loop"
+AnimationSource = ExtResource("4_animations")
