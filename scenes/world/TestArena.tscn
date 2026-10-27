@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/world/TestArena.cs" id="1_arena_script"]
 [ext_resource type="PackedScene" path="res://scenes/actors/Hero.tscn" id="2_hero_scene"]
 [ext_resource type="Script" path="res://scripts/core/IsoCamera.cs" id="3_camera_script"]
+[ext_resource type="PackedScene" path="res://scenes/actors/DummyEnemy.tscn" id="4_dummy_scene"]
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_arena"]
 geometry_parsed_geometry_type = 1
@@ -155,3 +156,12 @@ Target = NodePath("../Hero")
 
 [node name="Camera3D" type="Camera3D" parent="IsoCameraRig"]
 current = true
+
+[node name="Dummy1" parent="." instance=ExtResource("4_dummy_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -4)
+
+[node name="Dummy2" parent="." instance=ExtResource("4_dummy_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, -5)
+
+[node name="Dummy3" parent="." instance=ExtResource("4_dummy_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -9)
