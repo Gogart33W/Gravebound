@@ -4,8 +4,8 @@ namespace Gravebound.Actors;
 
 public partial class HeroAnimator : Node
 {
-    [Export] public StringName IdleAnim { get; set; } = "Idle_Shield_Loop";
-    [Export] public StringName RunAnim { get; set; } = "Walk_Carry_Loop";
+    [Export] public StringName IdleAnim { get; set; } = "Idle_Shield";
+    [Export] public StringName RunAnim { get; set; } = "Walk_Carry";
     [Export] public float SpeedThreshold { get; set; } = 0.1f;
     [Export] public PackedScene? AnimationSource { get; set; }
 
@@ -19,6 +19,8 @@ public partial class HeroAnimator : Node
         _animPlayer = GetNodeOrNull<AnimationPlayer>("AnimationPlayer")
                    ?? GetParent()?.GetNodeOrNull<AnimationPlayer>("AnimationPlayer");
 
+        GD.Print($"[HeroAnimator] _Ready started. Hero={_hero?.Name}, AnimPlayer={_animPlayer?.Name}, AnimSource={AnimationSource?.ResourcePath}");
+
         // Copy animations from the source library glb into the player
         if (AnimationSource != null && _animPlayer != null)
         {
@@ -28,14 +30,47 @@ public partial class HeroAnimator : Node
             {
                 foreach (StringName libName in sourcePlayer.GetAnimationLibraryList())
                 {
-                    var lib = sourcePlayer.GetAnimationLibrary(libName);
-                    if (!_animPlayer.HasAnimationLibrary(libName))
+                    var sourceLib = sourcePlayer.GetAnimationLibrary(libName);
+                    AnimationLibrary targetLib;
+                    if (_animPlayer.HasAnimationLibrary(libName))
                     {
-                        _animPlayer.AddAnimationLibrary(libName, (AnimationLibrary)lib.Duplicate());
+                        targetLib = _animPlayer.GetAnimationLibrary(libName);
                     }
+                    else
+                    {
+                        targetLib = new AnimationLibrary();
+                        _animPlayer.AddAnimationLibrary(libName, targetLib);
+                    }
+
+                    int count = 0;
+                    foreach (StringName animName in sourceLib.GetAnimationList())
+                    {
+                        var anim = (Animation)sourceLib.GetAnimation(animName).Duplicate();
+                        string nameLower = animName.ToString().ToLowerInvariant();
+                        if (nameLower.Contains("idle") || nameLower.Contains("walk") || nameLower.Contains("run"))
+                        {
+                            anim.LoopMode = Animation.LoopModeEnum.Linear;
+                        }
+
+                        if (targetLib.HasAnimation(animName))
+                        {
+                            targetLib.RemoveAnimation(animName);
+                        }
+                        targetLib.AddAnimation(animName, anim);
+                        count++;
+                    }
+                    GD.Print($"[HeroAnimator] Copied {count} animations from library '{libName}'. Total in player: {_animPlayer.GetAnimationList().Length}");
                 }
             }
+            else
+            {
+                GD.PrintErr("[HeroAnimator] Source AnimationPlayer not found in AnimationSource!");
+            }
             animInst.QueueFree();
+        }
+        else
+        {
+            GD.PrintErr($"[HeroAnimator] Missing reference: AnimSource={AnimationSource != null}, AnimPlayer={_animPlayer != null}");
         }
 
         PlayAnimation(IdleAnim);
@@ -72,6 +107,11 @@ public partial class HeroAnimator : Node
         {
             _currentAnim = animName;
             _animPlayer.Play(animName);
+            GD.Print($"[HeroAnimator] Playing animation: {animName}");
+        }
+        else
+        {
+            GD.PrintErr($"[HeroAnimator] Animation NOT found: {animName}. Available: {string.Join(", ", _animPlayer.GetAnimationList())}");
         }
     }
 }

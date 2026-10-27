@@ -40,10 +40,10 @@ use_external_skeleton = true
 external_skeleton = NodePath("CharacterModel/Armature/Skeleton3D")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-root_node = NodePath("CharacterModel")
+root_node = NodePath("../CharacterModel")
 
 [node name="HeroAnimator" type="Node" parent="."]
 script = ExtResource("3_animator")
-IdleAnim = &"Idle_Shield_Loop"
-RunAnim = &"Walk_Carry_Loop"
+IdleAnim = &"Idle_Shield"
+RunAnim = &"Walk_Carry"
 AnimationSource = ExtResource("4_animations")

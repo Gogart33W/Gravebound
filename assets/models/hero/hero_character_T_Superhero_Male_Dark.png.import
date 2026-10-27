@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bu4s3itmaa8yk"
-path="res://.godot/imported/hero_character_T_Superhero_Male_Dark.png-74091a04fc100821d197ddedbe1c6887.ctex"
+path.s3tc="res://.godot/imported/hero_character_T_Superhero_Male_Dark.png-74091a04fc100821d197ddedbe1c6887.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "eb9f39cf9ff577c2fae3820d62dcf0a7"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/hero/hero_character_T_Superhero_Male_Dark.png"
-dest_files=["res://.godot/imported/hero_character_T_Superhero_Male_Dark.png-74091a04fc100821d197ddedbe1c6887.ctex"]
+dest_files=["res://.godot/imported/hero_character_T_Superhero_Male_Dark.png-74091a04fc100821d197ddedbe1c6887.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0
