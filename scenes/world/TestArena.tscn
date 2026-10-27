@@ -1,0 +1,157 @@
+[gd_scene load_steps=19 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/TestArena.cs" id="1_arena_script"]
+[ext_resource type="PackedScene" path="res://scenes/actors/Hero.tscn" id="2_hero_scene"]
+[ext_resource type="Script" path="res://scripts/core/IsoCamera.cs" id="3_camera_script"]
+
+[sub_resource type="NavigationMesh" id="NavigationMesh_arena"]
+geometry_parsed_geometry_type = 1
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
+size = Vector3(60, 1, 60)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+albedo_color = Color(0.18, 0.18, 0.2, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_floor"]
+material = SubResource("StandardMaterial3D_floor")
+size = Vector3(60, 1, 60)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_obstacle"]
+albedo_color = Color(0.32, 0.3, 0.28, 1)
+roughness = 0.9
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_obs1"]
+size = Vector3(4, 3, 4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_obs1"]
+material = SubResource("StandardMaterial3D_obstacle")
+size = Vector3(4, 3, 4)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_obs2"]
+size = Vector3(6, 3, 3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_obs2"]
+material = SubResource("StandardMaterial3D_obstacle")
+size = Vector3(6, 3, 3)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_obs3"]
+size = Vector3(5, 3, 5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_obs3"]
+material = SubResource("StandardMaterial3D_obstacle")
+size = Vector3(5, 3, 5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_obs4"]
+size = Vector3(3, 3, 6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_obs4"]
+material = SubResource("StandardMaterial3D_obstacle")
+size = Vector3(3, 3, 6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_obs5"]
+size = Vector3(4, 4, 4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_obs5"]
+material = SubResource("StandardMaterial3D_obstacle")
+size = Vector3(4, 4, 4)
+
+[sub_resource type="Environment" id="Environment_dark"]
+background_mode = 1
+background_color = Color(0.08, 0.08, 0.1, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.2, 0.2, 0.24, 1)
+fog_enabled = true
+fog_light_color = Color(0.12, 0.12, 0.15, 1)
+fog_density = 0.015
+
+[node name="TestArena" type="Node3D"]
+script = ExtResource("1_arena_script")
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+navigation_mesh = SubResource("NavigationMesh_arena")
+
+[node name="Floor" type="StaticBody3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Floor"]
+shape = SubResource("BoxShape3D_floor")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Floor"]
+mesh = SubResource("BoxMesh_floor")
+
+[node name="Obstacle1" type="StaticBody3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1.5, -8)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Obstacle1"]
+shape = SubResource("BoxShape3D_obs1")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Obstacle1"]
+mesh = SubResource("BoxMesh_obs1")
+
+[node name="Obstacle2" type="StaticBody3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.5, -12)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Obstacle2"]
+shape = SubResource("BoxShape3D_obs2")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Obstacle2"]
+mesh = SubResource("BoxMesh_obs2")
+
+[node name="Obstacle3" type="StaticBody3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 1.5, 10)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Obstacle3"]
+shape = SubResource("BoxShape3D_obs3")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Obstacle3"]
+mesh = SubResource("BoxMesh_obs3")
+
+[node name="Obstacle4" type="StaticBody3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.5, 6)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Obstacle4"]
+shape = SubResource("BoxShape3D_obs4")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Obstacle4"]
+mesh = SubResource("BoxMesh_obs4")
+
+[node name="Obstacle5" type="StaticBody3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -18)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Obstacle5"]
+shape = SubResource("BoxShape3D_obs5")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D/Obstacle5"]
+mesh = SubResource("BoxMesh_obs5")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.25, 0.433013, 0, 0.866025, 0.5, -0.5, -0.433013, 0.75, 0, 15, 0)
+light_color = Color(0.9, 0.88, 0.85, 1)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_dark")
+
+[node name="Hero" parent="." instance=ExtResource("2_hero_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="IsoCameraRig" type="Node3D" parent="." node_paths=PackedStringArray("Target")]
+script = ExtResource("3_camera_script")
+Target = NodePath("../Hero")
+
+[node name="Camera3D" type="Camera3D" parent="IsoCameraRig"]
+current = true
