@@ -5,6 +5,7 @@
 [ext_resource type="Script" path="res://scripts/core/IsoCamera.cs" id="3_camera_script"]
 [ext_resource type="PackedScene" path="res://scenes/actors/DummyEnemy.tscn" id="4_dummy_scene"]
 [ext_resource type="PackedScene" path="res://scenes/ui/DebugCombatUI.tscn" id="5_debug_ui"]
+[ext_resource type="PackedScene" path="res://scenes/ui/InventoryUI.tscn" id="6_inventory_ui"]
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_arena"]
 geometry_parsed_geometry_type = 1
@@ -168,4 +169,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, -5)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -9)
 
 [node name="DebugCombatUI" parent="." instance=ExtResource("5_debug_ui")]
+
+[node name="InventoryUI" parent="." instance=ExtResource("6_inventory_ui")]
 

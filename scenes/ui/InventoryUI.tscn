@@ -1,0 +1,172 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/InventoryUI.cs" id="1_inventory_ui"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ItemSlotUI.tscn" id="2_slot_ui"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ItemTooltipUI.tscn" id="3_tooltip_ui"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_window"]
+bg_color = Color(0.08, 0.08, 0.1, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.42, 0.36, 0.28, 0.95)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 16.0
+content_margin_top = 14.0
+content_margin_right = 16.0
+content_margin_bottom = 14.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_close"]
+bg_color = Color(0.2, 0.18, 0.18, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="InventoryUI" type="CanvasLayer"]
+layer = 20
+script = ExtResource("1_inventory_ui")
+SlotScene = ExtResource("2_slot_ui")
+
+[node name="RootControl" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="WindowPanel" type="PanelContainer" parent="RootControl"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(520, 360)
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -560.0
+offset_top = -200.0
+offset_right = -40.0
+offset_bottom = 200.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_window")
+
+[node name="MainLayout" type="VBoxContainer" parent="RootControl/WindowPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderBar" type="HBoxContainer" parent="RootControl/WindowPanel/MainLayout"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="RootControl/WindowPanel/MainLayout/HeaderBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.82, 0.45, 1)
+theme_override_font_sizes/font_size = 15
+text = "INVENTORY & EQUIPMENT"
+
+[node name="CloseButton" type="Button" parent="RootControl/WindowPanel/MainLayout/HeaderBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_close")
+text = "✕"
+
+[node name="TopSeparator" type="HSeparator" parent="RootControl/WindowPanel/MainLayout"]
+layout_mode = 2
+
+[node name="ContentSplit" type="HBoxContainer" parent="RootControl/WindowPanel/MainLayout"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="EquipmentSection" type="VBoxContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EquipTitle" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
+theme_override_font_sizes/font_size = 12
+text = "EQUIPMENT"
+horizontal_alignment = 1
+
+[node name="HelmetCenter" type="CenterContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection"]
+layout_mode = 2
+
+[node name="SlotHelmet" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection/HelmetCenter" instance=ExtResource("2_slot_ui")]
+unique_name_in_owner = true
+layout_mode = 2
+IsEquipmentSlot = true
+EquipmentSlotType = 2
+
+[node name="HandsRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 16
+
+[node name="SlotMainHand" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection/HandsRow" instance=ExtResource("2_slot_ui")]
+unique_name_in_owner = true
+layout_mode = 2
+IsEquipmentSlot = true
+EquipmentSlotType = 0
+
+[node name="SlotOffHand" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection/HandsRow" instance=ExtResource("2_slot_ui")]
+unique_name_in_owner = true
+layout_mode = 2
+IsEquipmentSlot = true
+EquipmentSlotType = 1
+
+[node name="SectionSeparator" type="VSeparator" parent="RootControl/WindowPanel/MainLayout/ContentSplit"]
+layout_mode = 2
+
+[node name="InventorySection" type="VBoxContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="BagHeader" type="HBoxContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit/InventorySection"]
+layout_mode = 2
+
+[node name="BagTitle" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/InventorySection/BagHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
+theme_override_font_sizes/font_size = 12
+text = "BACKPACK"
+
+[node name="CapacityLabel" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/InventorySection/BagHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.65, 1)
+theme_override_font_sizes/font_size = 11
+text = "Bag: 0 / 20"
+
+[node name="InventoryGrid" type="GridContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit/InventorySection"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+columns = 5
+
+[node name="BottomSeparator" type="HSeparator" parent="RootControl/WindowPanel/MainLayout"]
+layout_mode = 2
+
+[node name="FooterLabel" type="Label" parent="RootControl/WindowPanel/MainLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.5, 0.55, 0.8)
+theme_override_font_sizes/font_size = 10
+text = "[RMB] Equip / Unequip • [I] Toggle • [ESC] Close"
+horizontal_alignment = 1
+
+[node name="ItemTooltipUI" parent="RootControl" instance=ExtResource("3_tooltip_ui")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
