@@ -89,7 +89,10 @@ public partial class ItemSlotUI : PanelContainer
                     ItemType.MainHand => "WEAPON",
                     ItemType.OffHand => "SHIELD",
                     ItemType.BodyArmor => "ARMOR",
+                    ItemType.Gloves => "GLOVES",
                     ItemType.Boots => "BOOTS",
+                    ItemType.Amulet => "AMULET",
+                    ItemType.Ring => "RING",
                     _ => ""
                 };
                 _placeholderLabel.Visible = true;

@@ -14,7 +14,7 @@ public partial class InventoryComponent : Node
     [Signal]
     public delegate void InventoryUpdatedEventHandler();
 
-    [Export] public int Capacity { get; set; } = 20;
+    [Export] public int Capacity { get; set; } = 40;
 
     private readonly Godot.Collections.Array<ItemData?> _slots = new();
 

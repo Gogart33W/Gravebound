@@ -67,7 +67,7 @@ ResourceRegenRate = 12.0
 
 [node name="InventoryComponent" type="Node" parent="."]
 script = ExtResource("8_inventory")
-Capacity = 20
+Capacity = 40
 
 [node name="EquipmentComponent" type="Node" parent="."]
 script = ExtResource("9_equipment")
