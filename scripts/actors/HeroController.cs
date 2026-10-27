@@ -233,7 +233,7 @@ public partial class HeroController : CharacterBody3D, IDamageable
 
                 if (isAlive)
                 {
-                    AttackTarget(targetNode3D, isSingleAttack: isClick && !_isHoldingLmb);
+                    AttackTarget(targetNode3D, isSingleAttack: isClick);
                     GD.Print($"[HeroController] Targeted enemy: {targetNode3D.Name} at {_currentTarget}");
                     return;
                 }
@@ -260,6 +260,7 @@ public partial class HeroController : CharacterBody3D, IDamageable
         _currentTarget = destination;
         _navAgent.TargetPosition = destination;
         _isNavigating = true;
+        _animator?.StopOneShot();
     }
 
     public void TakeDamage(float amount)

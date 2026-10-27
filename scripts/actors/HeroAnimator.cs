@@ -51,10 +51,10 @@ public partial class HeroAnimator : Node
 
     public void PlayAttack()
     {
-        PlayOneShot(AttackAnim);
+        PlayOneShot(AttackAnim, 0.08);
     }
 
-    public void PlayOneShot(StringName animName)
+    public void PlayOneShot(StringName animName, double blendTime = 0.08)
     {
         if (_animPlayer == null || string.IsNullOrEmpty(animName))
         {
@@ -65,8 +65,11 @@ public partial class HeroAnimator : Node
         {
             _isPlayingOneShot = true;
             _currentAnim = animName;
-            _animPlayer.Stop();
-            _animPlayer.Play(animName);
+            if (_animPlayer.IsPlaying() && _animPlayer.CurrentAnimation == animName)
+            {
+                _animPlayer.Seek(0, true);
+            }
+            _animPlayer.Play(animName, customBlend: blendTime);
         }
         else
         {
@@ -74,9 +77,18 @@ public partial class HeroAnimator : Node
         }
     }
 
+    public void StopOneShot()
+    {
+        if (_isPlayingOneShot)
+        {
+            _isPlayingOneShot = false;
+            _currentAnim = "";
+        }
+    }
+
     public override void _Process(double delta)
     {
-        if (_hero == null || _animPlayer == null || _isPlayingOneShot)
+        if (_hero == null || _animPlayer == null)
         {
             return;
         }
@@ -86,15 +98,17 @@ public partial class HeroAnimator : Node
 
         if (speed >= SpeedThreshold)
         {
-            PlayAnimation(RunAnim);
+            // Moving cancels one-shot animation smoothly
+            _isPlayingOneShot = false;
+            PlayAnimation(RunAnim, 0.12);
         }
-        else
+        else if (!_isPlayingOneShot)
         {
-            PlayAnimation(IdleAnim);
+            PlayAnimation(IdleAnim, 0.15);
         }
     }
 
-    private void PlayAnimation(StringName animName)
+    private void PlayAnimation(StringName animName, double blendTime = 0.15)
     {
         if (_animPlayer == null || string.IsNullOrEmpty(animName) || _currentAnim == animName || _isPlayingOneShot)
         {
@@ -104,13 +118,16 @@ public partial class HeroAnimator : Node
         if (_animPlayer.HasAnimation(animName))
         {
             _currentAnim = animName;
-            _animPlayer.Play(animName);
+            _animPlayer.Play(animName, customBlend: blendTime);
         }
     }
 
     private void CopyAnimationsFromSource(PackedScene sourceScene)
     {
         if (_animPlayer == null) return;
+
+        bool isFbx = sourceScene.ResourcePath != null &&
+                     sourceScene.ResourcePath.EndsWith(".fbx", System.StringComparison.OrdinalIgnoreCase);
 
         var animInst = sourceScene.Instantiate();
         var sourcePlayer = animInst.GetNodeOrNull<AnimationPlayer>("AnimationPlayer");
@@ -141,21 +158,33 @@ public partial class HeroAnimator : Node
                     for (int t = 0; t < anim.GetTrackCount(); t++)
                     {
                         string trackPath = anim.TrackGetPath(t).ToString();
-                        if (trackPath.StartsWith("Rig/"))
+                        bool isRigTrack = trackPath.StartsWith("Rig/");
+                        if (isRigTrack)
                         {
-                            anim.TrackSetPath(t, new NodePath("Armature/" + trackPath.Substring(4)));
+                            trackPath = "Armature/" + trackPath.Substring(4);
+                            anim.TrackSetPath(t, new NodePath(trackPath));
                         }
 
-                        // Fix FBX 1/100 centimeter scale bug on 3D position tracks
-                        if (anim.TrackGetType(t) == Animation.TrackType.Position3D)
+                        // Fix FBX 1/100 centimeter scale bug ONLY for FBX sources!
+                        // (GLTF/GLB files are already in meters; scaling them causes 100x teleportation glitches)
+                        if ((isFbx || isRigTrack) && anim.TrackGetType(t) == Animation.TrackType.Position3D)
                         {
                             for (int k = 0; k < anim.TrackGetKeyCount(t); k++)
                             {
                                 Vector3 pos = (Vector3)anim.TrackGetKeyValue(t, k);
-                                if (pos != Vector3.Zero && pos.Length() < 0.1f)
-                                {
-                                    anim.TrackSetKeyValue(t, k, pos * 100.0f);
-                                }
+                                anim.TrackSetKeyValue(t, k, pos * 100.0f);
+                            }
+                        }
+
+                        // Ground root bone: prevent root motion dislocation during attacks/locomotion.
+                        // In an ARPG, character displacement is driven by CharacterBody3D navigation/velocity.
+                        // Root position displacement causes the character mesh to violently slide/teleport
+                        // away from collision capsule and camera, creating duplicate/flying visual glitches.
+                        if (trackPath.EndsWith(":root") && anim.TrackGetType(t) == Animation.TrackType.Position3D)
+                        {
+                            for (int k = 0; k < anim.TrackGetKeyCount(t); k++)
+                            {
+                                anim.TrackSetKeyValue(t, k, Vector3.Zero);
                             }
                         }
                     }
