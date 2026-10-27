@@ -6,6 +6,7 @@ public partial class HeroAnimator : Node
 {
     [Export] public StringName IdleAnim { get; set; } = "Idle_Shield";
     [Export] public StringName RunAnim { get; set; } = "Walk";
+    [Export] public StringName AttackAnim { get; set; } = "Sword_Attack";
     [Export] public float SpeedThreshold { get; set; } = 0.1f;
     [Export] public PackedScene? AnimationSource { get; set; }
     [Export] public PackedScene? LocomotionSource { get; set; }
@@ -13,6 +14,7 @@ public partial class HeroAnimator : Node
     private CharacterBody3D? _hero;
     private AnimationPlayer? _animPlayer;
     private StringName _currentAnim = "";
+    private bool _isPlayingOneShot;
 
     public override void _Ready()
     {
@@ -22,6 +24,8 @@ public partial class HeroAnimator : Node
 
         if (_animPlayer != null)
         {
+            _animPlayer.AnimationFinished += OnAnimationFinished;
+
             if (AnimationSource != null)
             {
                 CopyAnimationsFromSource(AnimationSource);
@@ -34,6 +38,74 @@ public partial class HeroAnimator : Node
         }
 
         PlayAnimation(IdleAnim);
+    }
+
+    private void OnAnimationFinished(StringName animName)
+    {
+        if (_isPlayingOneShot)
+        {
+            _isPlayingOneShot = false;
+            _currentAnim = "";
+        }
+    }
+
+    public void PlayAttack()
+    {
+        PlayOneShot(AttackAnim);
+    }
+
+    public void PlayOneShot(StringName animName)
+    {
+        if (_animPlayer == null || string.IsNullOrEmpty(animName))
+        {
+            return;
+        }
+
+        if (_animPlayer.HasAnimation(animName))
+        {
+            _isPlayingOneShot = true;
+            _currentAnim = animName;
+            _animPlayer.Stop();
+            _animPlayer.Play(animName);
+        }
+        else
+        {
+            GD.PrintErr($"[HeroAnimator] OneShot animation NOT found: {animName}");
+        }
+    }
+
+    public override void _Process(double delta)
+    {
+        if (_hero == null || _animPlayer == null || _isPlayingOneShot)
+        {
+            return;
+        }
+
+        Vector2 horizontalVelocity = new Vector2(_hero.Velocity.X, _hero.Velocity.Z);
+        float speed = horizontalVelocity.Length();
+
+        if (speed >= SpeedThreshold)
+        {
+            PlayAnimation(RunAnim);
+        }
+        else
+        {
+            PlayAnimation(IdleAnim);
+        }
+    }
+
+    private void PlayAnimation(StringName animName)
+    {
+        if (_animPlayer == null || string.IsNullOrEmpty(animName) || _currentAnim == animName || _isPlayingOneShot)
+        {
+            return;
+        }
+
+        if (_animPlayer.HasAnimation(animName))
+        {
+            _currentAnim = animName;
+            _animPlayer.Play(animName);
+        }
     }
 
     private void CopyAnimationsFromSource(PackedScene sourceScene)
@@ -103,44 +175,5 @@ public partial class HeroAnimator : Node
             }
         }
         animInst.QueueFree();
-    }
-
-    public override void _Process(double delta)
-    {
-        if (_hero == null || _animPlayer == null)
-        {
-            return;
-        }
-
-        Vector2 horizontalVelocity = new Vector2(_hero.Velocity.X, _hero.Velocity.Z);
-        float speed = horizontalVelocity.Length();
-
-        if (speed >= SpeedThreshold)
-        {
-            PlayAnimation(RunAnim);
-        }
-        else
-        {
-            PlayAnimation(IdleAnim);
-        }
-    }
-
-    private void PlayAnimation(StringName animName)
-    {
-        if (_animPlayer == null || string.IsNullOrEmpty(animName) || _currentAnim == animName)
-        {
-            return;
-        }
-
-        if (_animPlayer.HasAnimation(animName))
-        {
-            _currentAnim = animName;
-            _animPlayer.Play(animName);
-            GD.Print($"[HeroAnimator] Playing animation: {animName}");
-        }
-        else
-        {
-            GD.PrintErr($"[HeroAnimator] Animation NOT found: {animName}. Available: {string.Join(", ", _animPlayer.GetAnimationList())}");
-        }
     }
 }
