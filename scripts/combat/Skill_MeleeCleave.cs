@@ -75,7 +75,8 @@ public partial class Skill_MeleeCleave : SkillBase
 
                         if (damageable != null && hitTargets.Add(damageable))
                         {
-                            damageable.TakeDamage(Damage);
+                            float bonusAtk = caster is HeroController hero ? hero.BonusAttackPower : 0.0f;
+                            damageable.TakeDamage(Damage + bonusAtk);
                             hitCount++;
                         }
                     }
@@ -111,7 +112,8 @@ public partial class Skill_MeleeCleave : SkillBase
                             float angleDeg = Mathf.RadToDeg(forward.AngleTo(toObj.Normalized()));
                             if (angleDeg <= ArcDegrees * 0.5f)
                             {
-                                damageable.TakeDamage(Damage);
+                                float bonusAtk = caster is HeroController hero ? hero.BonusAttackPower : 0.0f;
+                                damageable.TakeDamage(Damage + bonusAtk);
                                 hitCount++;
                             }
                         }

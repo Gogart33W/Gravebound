@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="rustyBlade" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a0988e"/>
+      <stop offset="50%" stop-color="#735f4c"/>
+      <stop offset="100%" stop-color="#4f4034"/>
+    </linearGradient>
+  </defs>
+  <!-- Blade -->
+  <polygon points="46,8 56,18 24,50 14,40" fill="url(#rustyBlade)" stroke="#2d221a" stroke-width="1.5"/>
+  <line x1="51" y1="13" x2="19" y2="45" stroke="#3d3027" stroke-width="1"/>
+  <!-- Crossguard -->
+  <polygon points="12,34 30,52 26,56 8,38" fill="#5c4838" stroke="#1f1610" stroke-width="1.5"/>
+  <!-- Grip -->
+  <line x1="17" y1="47" x2="7" y2="57" stroke="#3b2518" stroke-width="4" stroke-linecap="round"/>
+  <!-- Pommel -->
+  <circle cx="6" cy="58" r="3.5" fill="#7a624d" stroke="#1f1610" stroke-width="1.5"/>
+</svg>

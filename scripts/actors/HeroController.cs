@@ -23,11 +23,17 @@ public partial class HeroController : CharacterBody3D, IDamageable
 
     public HealthComponent? HealthComp => _healthComponent;
     public ResourceComponent? ResourceComp => _resourceComponent;
+    public InventoryComponent? Inventory => _inventoryComponent;
+    public EquipmentComponent? Equipment => _equipmentComponent;
+    public Node3D? CurrentAttackTarget => _attackTarget;
+    public float BaseAttackDamage => _baseAttackDamage;
 
     private NavigationAgent3D _navAgent = null!;
     private HeroAnimator? _animator;
     private HealthComponent? _healthComponent;
     private ResourceComponent? _resourceComponent;
+    private InventoryComponent? _inventoryComponent;
+    private EquipmentComponent? _equipmentComponent;
 
     private bool _isNavigating;
     private Vector3 _currentTarget;
@@ -47,6 +53,12 @@ public partial class HeroController : CharacterBody3D, IDamageable
     private float _invulnerableTimeRemaining;
     private float _castLockTimer;
 
+    private float _baseAttackDamage;
+    private float _baseMoveSpeed;
+    private float _baseMaxHealth;
+
+    public float BonusAttackPower => _equipmentComponent?.GetTotalStatModifier("attack_power") ?? 0.0f;
+
     public override void _Ready()
     {
         AddToGroup("Hero");
@@ -54,12 +66,46 @@ public partial class HeroController : CharacterBody3D, IDamageable
         _animator = GetNodeOrNull<HeroAnimator>("HeroAnimator");
         _healthComponent = GetNodeOrNull<HealthComponent>("HealthComponent");
         _resourceComponent = GetNodeOrNull<ResourceComponent>("ResourceComponent");
+        _inventoryComponent = GetNodeOrNull<InventoryComponent>("InventoryComponent");
+        _equipmentComponent = GetNodeOrNull<EquipmentComponent>("EquipmentComponent");
+
+        _baseAttackDamage = AttackDamage;
+        _baseMoveSpeed = MoveSpeed;
+        _baseMaxHealth = _healthComponent?.MaxHealth ?? 100.0f;
+
+        if (_equipmentComponent != null)
+        {
+            _equipmentComponent.EquipmentUpdated += UpdateEquipmentStats;
+            UpdateEquipmentStats();
+        }
 
         SkillQ ??= new Skill_MeleeCleave();
         SkillW ??= new Skill_Dash();
 
         _navAgent.PathDesiredDistance = 0.6f;
         _navAgent.TargetDesiredDistance = 0.6f;
+    }
+
+    public void UpdateEquipmentStats()
+    {
+        if (_equipmentComponent == null)
+        {
+            return;
+        }
+
+        float bonusAttack = _equipmentComponent.GetTotalStatModifier("attack_power");
+        AttackDamage = _baseAttackDamage + bonusAttack;
+
+        float bonusSpeed = _equipmentComponent.GetTotalStatModifier("move_speed");
+        MoveSpeed = _baseMoveSpeed + bonusSpeed;
+
+        float bonusHealth = _equipmentComponent.GetTotalStatModifier("max_health");
+        if (_healthComponent != null)
+        {
+            _healthComponent.SetMaxHealth(_baseMaxHealth + bonusHealth);
+        }
+
+        GD.Print($"[HeroController] Stats updated -> ATK: {AttackDamage} (Base {_baseAttackDamage} + {bonusAttack}), MaxHP: {_healthComponent?.MaxHealth}");
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -231,10 +277,32 @@ public partial class HeroController : CharacterBody3D, IDamageable
             _isNavigating = false;
             Velocity = new Vector3(0.0f, Velocity.Y, 0.0f);
 
-            var pickedItem = _itemTarget.Collect();
-            if (pickedItem != null)
+            var itemToCollect = _itemTarget.Item;
+            if (itemToCollect != null)
             {
-                GD.Print($"Picked up {pickedItem.ItemName}");
+                if (_inventoryComponent != null)
+                {
+                    if (_inventoryComponent.TryAddItem(itemToCollect))
+                    {
+                        var pickedItem = _itemTarget.Collect();
+                        if (pickedItem != null)
+                        {
+                            GD.Print($"Picked up {pickedItem.ItemName}");
+                        }
+                    }
+                    else
+                    {
+                        GD.Print($"[HeroController] Inventory is full! Could not pick up {itemToCollect.ItemName}");
+                    }
+                }
+                else
+                {
+                    var pickedItem = _itemTarget.Collect();
+                    if (pickedItem != null)
+                    {
+                        GD.Print($"Picked up {pickedItem.ItemName}");
+                    }
+                }
             }
 
             _itemTarget = null;

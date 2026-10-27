@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="boneGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f5f5f0"/>
+      <stop offset="70%" stop-color="#d7d0bc"/>
+      <stop offset="100%" stop-color="#a89f89"/>
+    </linearGradient>
+    <linearGradient id="hornGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3e2723"/>
+      <stop offset="100%" stop-color="#1b0000"/>
+    </linearGradient>
+  </defs>
+  <!-- Horns -->
+  <path d="M18,30 C12,18 6,14 4,6 C14,10 20,20 22,28 Z" fill="url(#hornGrad)" stroke="#1a0c08" stroke-width="1.5"/>
+  <path d="M46,30 C52,18 58,14 60,6 C50,10 44,20 42,28 Z" fill="url(#hornGrad)" stroke="#1a0c08" stroke-width="1.5"/>
+  <!-- Cranium -->
+  <path d="M18,32 C18,18 46,18 46,32 C46,42 42,48 40,54 L24,54 C22,48 18,42 18,32 Z" fill="url(#boneGrad)" stroke="#524a3c" stroke-width="2"/>
+  <!-- Eye sockets -->
+  <ellipse cx="26" cy="35" rx="4.5" ry="5.5" fill="#1a1410"/>
+  <ellipse cx="38" cy="35" rx="4.5" ry="5.5" fill="#1a1410"/>
+  <!-- Glowing pupils -->
+  <circle cx="26" cy="35" r="1.5" fill="#ff7043"/>
+  <circle cx="38" cy="35" r="1.5" fill="#ff7043"/>
+  <!-- Nose cavity -->
+  <polygon points="32,41 29,46 35,46" fill="#2d221a"/>
+  <!-- Teeth / jaw line -->
+  <path d="M25,50 L25,54 M28,50 L28,54 M32,50 L32,54 M36,50 L36,54 M39,50 L39,54" stroke="#524a3c" stroke-width="1.5"/>
+</svg>

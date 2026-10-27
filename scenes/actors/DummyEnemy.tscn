@@ -5,6 +5,7 @@
 
 [ext_resource type="Resource" path="res://data/loot/dummy_loot_table.tres" id="3_loot"]
 [ext_resource type="PackedScene" path="res://scenes/items/WorldItem.tscn" id="4_world_item"]
+[ext_resource type="PackedScene" path="res://scenes/ui/EnemyHealthBar3D.tscn" id="5_health_bar"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_dummy"]
 radius = 0.45
@@ -38,3 +39,6 @@ mesh = SubResource("CylinderMesh_dummy")
 [node name="HealthComponent" type="Node" parent="."]
 script = ExtResource("2_health")
 MaxHealth = 100.0
+
+[node name="EnemyHealthBar3D" parent="." instance=ExtResource("5_health_bar")]
+

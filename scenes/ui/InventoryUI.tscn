@@ -1,0 +1,352 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/InventoryUI.cs" id="1_inventory_ui"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ItemSlotUI.tscn" id="2_slot_ui"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ItemTooltipUI.tscn" id="3_tooltip_ui"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_window"]
+bg_color = Color(0.07, 0.07, 0.09, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.55, 0.45, 0.3, 0.95)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 18.0
+content_margin_top = 14.0
+content_margin_right = 18.0
+content_margin_bottom = 14.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stats_box"]
+bg_color = Color(0.04, 0.04, 0.05, 0.75)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.25, 0.22, 0.18, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_close"]
+bg_color = Color(0.22, 0.18, 0.18, 0.85)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="InventoryUI" type="CanvasLayer"]
+layer = 20
+script = ExtResource("1_inventory_ui")
+SlotScene = ExtResource("2_slot_ui")
+
+[node name="RootControl" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="WindowPanel" type="PanelContainer" parent="RootControl"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(980, 560)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -490.0
+offset_top = -280.0
+offset_right = 490.0
+offset_bottom = 280.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_window")
+
+[node name="MainLayout" type="VBoxContainer" parent="RootControl/WindowPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderBar" type="HBoxContainer" parent="RootControl/WindowPanel/MainLayout"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="RootControl/WindowPanel/MainLayout/HeaderBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.82, 0.45, 1)
+theme_override_font_sizes/font_size = 16
+text = "ГЕРОЙ ТА ІНВЕНТАР • CHARACTER & INVENTORY"
+
+[node name="CloseButton" type="Button" parent="RootControl/WindowPanel/MainLayout/HeaderBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_close")
+text = "✕"
+
+[node name="TopSeparator" type="HSeparator" parent="RootControl/WindowPanel/MainLayout"]
+layout_mode = 2
+
+[node name="ContentSplit" type="HBoxContainer" parent="RootControl/WindowPanel/MainLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="EquipmentSection" type="VBoxContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="EquipTitle" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.75, 0.5, 1)
+theme_override_font_sizes/font_size = 13
+text = "⚔ ЕКІПІРУВАННЯ"
+horizontal_alignment = 1
+
+[node name="HelmetRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection"]
+layout_mode = 2
+alignment = 1
+
+[node name="SlotHelmet" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection/HelmetRow" instance=ExtResource("2_slot_ui")]
+unique_name_in_owner = true
+layout_mode = 2
+IsEquipmentSlot = true
+EquipmentSlotType = 2
+
+[node name="UpperTorsoRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="SlotAmulet" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection/UpperTorsoRow" instance=ExtResource("2_slot_ui")]
+unique_name_in_owner = true
+layout_mode = 2
+IsEquipmentSlot = true
+EquipmentSlotType = 6
+
+[node name="SlotBodyArmor" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection/UpperTorsoRow" instance=ExtResource("2_slot_ui")]
+unique_name_in_owner = true
+layout_mode = 2
+IsEquipmentSlot = true
+EquipmentSlotType = 3
+
+[node name="SlotRing" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection/UpperTorsoRow" instance=ExtResource("2_slot_ui")]
+unique_name_in_owner = true
+layout_mode = 2
+IsEquipmentSlot = true
+EquipmentSlotType = 7
+
+[node name="HandsRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="SlotMainHand" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection/HandsRow" instance=ExtResource("2_slot_ui")]
+unique_name_in_owner = true
+layout_mode = 2
+IsEquipmentSlot = true
+EquipmentSlotType = 0
+
+[node name="SlotGloves" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection/HandsRow" instance=ExtResource("2_slot_ui")]
+unique_name_in_owner = true
+layout_mode = 2
+IsEquipmentSlot = true
+EquipmentSlotType = 4
+
+[node name="SlotOffHand" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection/HandsRow" instance=ExtResource("2_slot_ui")]
+unique_name_in_owner = true
+layout_mode = 2
+IsEquipmentSlot = true
+EquipmentSlotType = 1
+
+[node name="BootsRow" type="HBoxContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection"]
+layout_mode = 2
+alignment = 1
+
+[node name="SlotBoots" parent="RootControl/WindowPanel/MainLayout/ContentSplit/EquipmentSection/BootsRow" instance=ExtResource("2_slot_ui")]
+unique_name_in_owner = true
+layout_mode = 2
+IsEquipmentSlot = true
+EquipmentSlotType = 5
+
+[node name="SepLeft" type="VSeparator" parent="RootControl/WindowPanel/MainLayout/ContentSplit"]
+layout_mode = 2
+
+[node name="InventorySection" type="VBoxContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="BagHeader" type="HBoxContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit/InventorySection"]
+layout_mode = 2
+
+[node name="BagTitle" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/InventorySection/BagHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.75, 0.5, 1)
+theme_override_font_sizes/font_size = 13
+text = "🎒 РЮКЗАК (40 СЛОТІВ)"
+
+[node name="CapacityLabel" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/InventorySection/BagHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "Місткість: 0 / 40"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit/InventorySection"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="InventoryGrid" type="GridContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit/InventorySection/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 8
+
+[node name="SepRight" type="VSeparator" parent="RootControl/WindowPanel/MainLayout/ContentSplit"]
+layout_mode = 2
+
+[node name="StatsSection" type="VBoxContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="StatsTitle" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.75, 0.5, 1)
+theme_override_font_sizes/font_size = 13
+text = "📜 ХАРАКТЕРИСТИКИ"
+horizontal_alignment = 1
+
+[node name="StatsPanel" type="PanelContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_stats_box")
+
+[node name="StatsVBox" type="VBoxContainer" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="HeroClassLabel" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel/StatsVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.85, 0.5, 1)
+theme_override_font_sizes/font_size = 13
+text = "Воїн (Рівень 1)"
+horizontal_alignment = 1
+
+[node name="HSeparator1" type="HSeparator" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel/StatsVBox"]
+layout_mode = 2
+
+[node name="StatHealth" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel/StatsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.35, 0.35, 1)
+theme_override_font_sizes/font_size = 12
+text = "❤️ Здоров'я: 100 / 100"
+
+[node name="StatMana" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel/StatsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.65, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+text = "💧 Мана: 100 / 100"
+
+[node name="StatDamage" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel/StatsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.6, 0.3, 1)
+theme_override_font_sizes/font_size = 12
+text = "⚔ Шкода: 25"
+
+[node name="StatArmor" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel/StatsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 12
+text = "🛡 Броня: 0"
+
+[node name="StatSpeed" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel/StatsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.85, 0.6, 1)
+theme_override_font_sizes/font_size = 12
+text = "🏃 Швидкість: 6.0"
+
+[node name="HSeparator2" type="HSeparator" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel/StatsVBox"]
+layout_mode = 2
+
+[node name="AttributesHeader" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel/StatsVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 1)
+theme_override_font_sizes/font_size = 11
+text = "АТРИБУТИ"
+
+[node name="StatStr" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel/StatsVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "ᛯ Сила: 50"
+
+[node name="StatDex" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel/StatsVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "ᛯ Спритність: 50"
+
+[node name="StatInt" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel/StatsVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "ᛯ Інтелект: 50"
+
+[node name="HSeparator3" type="HSeparator" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel/StatsVBox"]
+layout_mode = 2
+
+[node name="ResistsHeader" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel/StatsVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 1)
+theme_override_font_sizes/font_size = 11
+text = "ОПІР"
+
+[node name="StatResFire" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel/StatsVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "🔥 Вогонь: 0%"
+
+[node name="StatResCold" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel/StatsVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "❄️ Холод: 0%"
+
+[node name="StatResPoison" type="Label" parent="RootControl/WindowPanel/MainLayout/ContentSplit/StatsSection/StatsPanel/StatsVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "🧪 Отрута: 0%"
+
+[node name="BottomSeparator" type="HSeparator" parent="RootControl/WindowPanel/MainLayout"]
+layout_mode = 2
+
+[node name="FooterLabel" type="Label" parent="RootControl/WindowPanel/MainLayout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.5, 0.55, 0.8)
+theme_override_font_sizes/font_size = 11
+text = "[ПКМ] Одягти / Зняти предмет • [I] Закрити / Відкрити • [ESC] Закрити"
+horizontal_alignment = 1
+
+[node name="ItemTooltipUI" parent="RootControl" instance=ExtResource("3_tooltip_ui")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
