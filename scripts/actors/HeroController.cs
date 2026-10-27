@@ -16,8 +16,8 @@ public partial class HeroController : CharacterBody3D
     {
         AddToGroup("Hero");
         _navAgent = GetNode<NavigationAgent3D>("NavigationAgent3D");
-        _navAgent.PathDesiredDistance = 0.5f;
-        _navAgent.TargetDesiredDistance = 0.5f;
+        _navAgent.PathDesiredDistance = 0.6f;
+        _navAgent.TargetDesiredDistance = 0.6f;
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -44,9 +44,11 @@ public partial class HeroController : CharacterBody3D
             return;
         }
 
-        // Check if we arrived at destination
-        float horizontalDistanceToTarget = new Vector2(GlobalPosition.X - _currentTarget.X, GlobalPosition.Z - _currentTarget.Z).Length();
-        if (horizontalDistanceToTarget <= _navAgent.TargetDesiredDistance || _navAgent.IsNavigationFinished())
+        // Distance to final destination on horizontal XZ plane
+        float horizontalDistance = new Vector2(GlobalPosition.X - _currentTarget.X, GlobalPosition.Z - _currentTarget.Z).Length();
+
+        // Arrived at destination: stop cleanly
+        if (horizontalDistance <= _navAgent.TargetDesiredDistance)
         {
             _isNavigating = false;
             Velocity = new Vector3(0.0f, Velocity.Y, 0.0f);
@@ -59,8 +61,8 @@ public partial class HeroController : CharacterBody3D
         Vector3 direction = nextPathPos - GlobalPosition;
         direction.Y = 0.0f;
 
-        // If next path position is too close to current position, fallback to target direction
-        if (direction.LengthSquared() < 0.01f)
+        // Fallback to direct target vector if waypoint is right under agent
+        if (direction.LengthSquared() < 0.04f)
         {
             direction = _currentTarget - GlobalPosition;
             direction.Y = 0.0f;
@@ -69,12 +71,19 @@ public partial class HeroController : CharacterBody3D
         if (direction.LengthSquared() > 0.001f)
         {
             direction = direction.Normalized();
-            Velocity = new Vector3(direction.X * MoveSpeed, Velocity.Y, direction.Z * MoveSpeed);
 
-            float targetAngle = Mathf.Atan2(direction.X, direction.Z);
-            float currentAngle = Rotation.Y;
-            float newAngle = Mathf.LerpAngle(currentAngle, targetAngle, (float)(RotationSpeed * delta));
-            Rotation = new Vector3(Rotation.X, newAngle, Rotation.Z);
+            // Prevent overshoot near target
+            float currentSpeed = Mathf.Min(MoveSpeed, horizontalDistance * 4.0f);
+            Velocity = new Vector3(direction.X * currentSpeed, Velocity.Y, direction.Z * currentSpeed);
+
+            // Smooth rotation towards travel direction (only when not at destination)
+            if (horizontalDistance > _navAgent.TargetDesiredDistance + 0.1f)
+            {
+                float targetAngle = Mathf.Atan2(direction.X, direction.Z);
+                float currentAngle = Rotation.Y;
+                float newAngle = Mathf.LerpAngle(currentAngle, targetAngle, (float)(RotationSpeed * delta));
+                Rotation = new Vector3(Rotation.X, newAngle, Rotation.Z);
+            }
         }
         else
         {
