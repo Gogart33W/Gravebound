@@ -1,0 +1,40 @@
+[gd_scene load_steps=7 format=3]
+
+[sub_resource type="StandardMaterial3D" id="Mat_Wood"]
+albedo_color = Color(0.42, 0.28, 0.16, 1)
+roughness = 0.8
+
+[sub_resource type="CylinderMesh" id="Mesh_ShieldBody"]
+material = SubResource("Mat_Wood")
+top_radius = 0.3
+bottom_radius = 0.3
+height = 0.03
+
+[sub_resource type="StandardMaterial3D" id="Mat_Iron"]
+albedo_color = Color(0.35, 0.38, 0.42, 1)
+metallic = 0.8
+roughness = 0.35
+
+[sub_resource type="SphereMesh" id="Mesh_Boss"]
+material = SubResource("Mat_Iron")
+radius = 0.08
+height = 0.08
+
+[sub_resource type="TorusMesh" id="Mesh_Rim"]
+material = SubResource("Mat_Iron")
+inner_radius = 0.28
+outer_radius = 0.31
+
+[node name="VisualShield" type="Node3D"]
+transform = Transform3D(0.996195, -0.0151922, 0.0858317, 0, 0.984808, 0.173648, -0.0871557, -0.172987, 0.98106, 0, 0.02, 0)
+
+[node name="Body" type="MeshInstance3D" parent="."]
+mesh = SubResource("Mesh_ShieldBody")
+
+[node name="Boss" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+mesh = SubResource("Mesh_Boss")
+
+[node name="Rim" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+mesh = SubResource("Mesh_Rim")

@@ -1,0 +1,55 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/WorldItem.cs" id="1_world_item"]
+[ext_resource type="PackedScene" path="res://scenes/items/visuals/VisualPouch.tscn" id="2_visual_pouch"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pickup"]
+size = Vector3(1.1, 0.7, 0.9)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_plate"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.05, 0.05, 0.07, 0.85)
+no_depth_test = true
+render_priority = 9
+billboard_mode = 1
+
+[sub_resource type="QuadMesh" id="QuadMesh_plate"]
+material = SubResource("StandardMaterial3D_plate")
+size = Vector2(1.1, 0.18)
+
+[node name="WorldItem" type="Area3D"]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("1_world_item")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+shape = SubResource("BoxShape3D_pickup")
+
+[node name="VisualContainer" type="Node3D" parent="."]
+
+[node name="DefaultMesh" parent="VisualContainer" instance=ExtResource("2_visual_pouch")]
+
+[node name="PlateMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+mesh = SubResource("QuadMesh_plate")
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+billboard = 1
+shaded = false
+double_sided = false
+no_depth_test = true
+render_priority = 10
+outline_render_priority = 9
+text = "ITEM NAME"
+font_size = 22
+outline_size = 2
+outline_modulate = Color(0, 0, 0, 0.85)
+
+[node name="GlowLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+light_color = Color(0.9, 0.9, 0.9, 1)
+light_energy = 0.5
+omni_range = 1.8

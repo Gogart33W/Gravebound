@@ -1,5 +1,6 @@
 using Godot;
 using Gravebound.Combat;
+using Gravebound.Items;
 
 namespace Gravebound.Actors;
 
@@ -7,6 +8,8 @@ public partial class DummyEnemy : CharacterBody3D, IDamageable
 {
     [Export] public bool ResetsOnDeath { get; set; } = true;
     [Export] public float ResetDelay { get; set; } = 1.0f;
+    [Export] public LootTable? DropTable { get; set; }
+    [Export] public PackedScene? WorldItemScene { get; set; }
 
     public bool IsDead => _health?.IsDead ?? false;
 
@@ -21,6 +24,11 @@ public partial class DummyEnemy : CharacterBody3D, IDamageable
         AddToGroup("Enemies");
         _health = GetNode<HealthComponent>("HealthComponent");
         _health.Died += OnDied;
+
+        if (DropTable == null && ResourceLoader.Exists("res://data/loot/dummy_loot_table.tres"))
+        {
+            DropTable = GD.Load<LootTable>("res://data/loot/dummy_loot_table.tres");
+        }
 
         _mesh = GetNodeOrNull<MeshInstance3D>("MeshInstance3D");
         if (_mesh != null)
@@ -74,6 +82,7 @@ public partial class DummyEnemy : CharacterBody3D, IDamageable
     private async void OnDied()
     {
         GD.Print("[DummyEnemy] Target dummy destroyed!");
+        SpawnLoot();
 
         if (ResetsOnDeath)
         {
@@ -93,6 +102,45 @@ public partial class DummyEnemy : CharacterBody3D, IDamageable
         else
         {
             QueueFree();
+        }
+    }
+
+    private void SpawnLoot()
+    {
+        if (DropTable == null)
+        {
+            return;
+        }
+
+        var drops = DropTable.RollDrops();
+        if (drops.Count == 0)
+        {
+            return;
+        }
+
+        var itemScene = WorldItemScene ?? GD.Load<PackedScene>("res://scenes/items/WorldItem.tscn");
+        if (itemScene == null)
+        {
+            return;
+        }
+
+        foreach (var item in drops)
+        {
+            var worldItem = itemScene.Instantiate<WorldItem>();
+            float angle = (float)GD.RandRange(0.0f, Mathf.Tau);
+            float dist = (float)GD.RandRange(0.8f, 1.8f);
+            Vector3 offset = new Vector3(Mathf.Cos(angle) * dist, 0.0f, Mathf.Sin(angle) * dist);
+
+            worldItem.Position = GlobalPosition + offset;
+            GetTree().Root.AddChild(worldItem);
+            worldItem.Initialize(item);
+
+            // Pop-up bounce animation
+            float targetY = worldItem.Position.Y;
+            worldItem.Position += Vector3.Up * 0.6f;
+            var tween = worldItem.CreateTween();
+            tween.SetTrans(Tween.TransitionType.Bounce).SetEase(Tween.EaseType.Out);
+            tween.TweenProperty(worldItem, "position:y", targetY, 0.35f);
         }
     }
 }

@@ -1,0 +1,54 @@
+[gd_scene load_steps=7 format=3]
+
+[sub_resource type="StandardMaterial3D" id="Mat_Skull"]
+albedo_color = Color(0.82, 0.78, 0.68, 1)
+roughness = 0.65
+emission_enabled = true
+emission = Color(0.9, 0.45, 0.1, 1)
+emission_energy_multiplier = 0.25
+
+[sub_resource type="SphereMesh" id="Mesh_Cranium"]
+material = SubResource("Mat_Skull")
+radius = 0.14
+height = 0.22
+
+[sub_resource type="StandardMaterial3D" id="Mat_Socket"]
+albedo_color = Color(0.08, 0.05, 0.05, 1)
+roughness = 0.9
+
+[sub_resource type="SphereMesh" id="Mesh_Socket"]
+material = SubResource("Mat_Socket")
+radius = 0.035
+height = 0.05
+
+[sub_resource type="StandardMaterial3D" id="Mat_Horn"]
+albedo_color = Color(0.2, 0.18, 0.16, 1)
+roughness = 0.4
+
+[sub_resource type="CylinderMesh" id="Mesh_Horn"]
+material = SubResource("Mat_Horn")
+top_radius = 0.005
+bottom_radius = 0.03
+height = 0.18
+
+[node name="VisualHelmet" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 0.1, 0)
+
+[node name="Cranium" type="MeshInstance3D" parent="."]
+mesh = SubResource("Mesh_Cranium")
+
+[node name="EyeLeft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 0.02, 0.12)
+mesh = SubResource("Mesh_Socket")
+
+[node name="EyeRight" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.02, 0.12)
+mesh = SubResource("Mesh_Socket")
+
+[node name="HornLeft" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.866025, 0.5, 0, -0.5, 0.866025, 0, 0, 0, 1, -0.14, 0.08, 0)
+mesh = SubResource("Mesh_Horn")
+
+[node name="HornRight" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.866025, -0.5, 0, 0.5, 0.866025, 0, 0, 0, 1, 0.14, 0.08, 0)
+mesh = SubResource("Mesh_Horn")

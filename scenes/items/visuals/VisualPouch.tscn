@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3]
+
+[sub_resource type="StandardMaterial3D" id="Mat_Leather"]
+albedo_color = Color(0.38, 0.26, 0.16, 1)
+roughness = 0.85
+
+[sub_resource type="SphereMesh" id="Mesh_PouchBase"]
+material = SubResource("Mat_Leather")
+radius = 0.12
+height = 0.16
+
+[sub_resource type="StandardMaterial3D" id="Mat_Rope"]
+albedo_color = Color(0.7, 0.65, 0.45, 1)
+roughness = 0.9
+
+[sub_resource type="TorusMesh" id="Mesh_Rope"]
+material = SubResource("Mat_Rope")
+inner_radius = 0.05
+outer_radius = 0.07
+
+[node name="VisualPouch" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0)
+
+[node name="Base" type="MeshInstance3D" parent="."]
+mesh = SubResource("Mesh_PouchBase")
+
+[node name="Tie" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0)
+mesh = SubResource("Mesh_Rope")
