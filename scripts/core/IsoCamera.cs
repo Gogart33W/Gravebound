@@ -5,13 +5,16 @@ namespace Gravebound.Core;
 public partial class IsoCamera : Node3D
 {
     [Export] public Node3D? Target { get; set; }
-    [Export] public float FollowSpeed { get; set; } = 8.0f;
-    [Export] public float PitchDegrees { get; set; } = 50.0f;
+    [Export] public float FollowSpeed { get; set; } = 10.0f;
     [Export] public float YawDegrees { get; set; } = 45.0f;
-    [Export] public float Distance { get; set; } = 14.0f;
-    [Export] public float MinZoom { get; set; } = 8.0f;
-    [Export] public float MaxZoom { get; set; } = 22.0f;
-    [Export] public float ZoomSpeed { get; set; } = 2.0f;
+    [Export] public float MinPitchDegrees { get; set; } = 20.0f;
+    [Export] public float MaxPitchDegrees { get; set; } = 52.0f;
+    [Export] public float MinZoom { get; set; } = 3.0f;
+    [Export] public float MaxZoom { get; set; } = 20.0f;
+    [Export] public float Distance { get; set; } = 13.0f;
+    [Export] public float ZoomSpeed { get; set; } = 1.5f;
+    [Export] public float MinTargetHeight { get; set; } = 1.15f;
+    [Export] public float MaxTargetHeight { get; set; } = 0.8f;
 
     private Camera3D? _camera;
     private float _targetDistance;
@@ -28,7 +31,7 @@ public partial class IsoCamera : Node3D
 
         if (Target != null)
         {
-            GlobalPosition = Target.GlobalPosition;
+            GlobalPosition = GetTargetPosition();
         }
 
         ApplyOrientation();
@@ -56,13 +59,25 @@ public partial class IsoCamera : Node3D
 
         if (Target != null && IsInstanceValid(Target))
         {
-            GlobalPosition = GlobalPosition.Lerp(Target.GlobalPosition, (float)(FollowSpeed * delta));
+            GlobalPosition = GlobalPosition.Lerp(GetTargetPosition(), (float)(FollowSpeed * delta));
         }
+    }
+
+    private Vector3 GetTargetPosition()
+    {
+        if (Target == null) return GlobalPosition;
+
+        float zoomFactor = Mathf.Clamp((Distance - MinZoom) / (MaxZoom - MinZoom), 0.0f, 1.0f);
+        float currentTargetHeight = Mathf.Lerp(MinTargetHeight, MaxTargetHeight, zoomFactor);
+        return Target.GlobalPosition + new Vector3(0.0f, currentTargetHeight, 0.0f);
     }
 
     private void ApplyOrientation()
     {
-        RotationDegrees = new Vector3(-PitchDegrees, YawDegrees, 0.0f);
+        float zoomFactor = Mathf.Clamp((Distance - MinZoom) / (MaxZoom - MinZoom), 0.0f, 1.0f);
+        float currentPitch = Mathf.Lerp(MinPitchDegrees, MaxPitchDegrees, zoomFactor);
+
+        RotationDegrees = new Vector3(-currentPitch, YawDegrees, 0.0f);
 
         if (_camera != null)
         {
