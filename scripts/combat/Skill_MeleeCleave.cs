@@ -7,7 +7,7 @@ namespace Gravebound.Combat;
 public partial class Skill_MeleeCleave : SkillBase
 {
     [Export] public float Damage { get; set; } = 45.0f;
-    [Export] public float ArcDegrees { get; set; } = 140.0f;
+    [Export] public float ArcDegrees { get; set; } = 150.0f;
     [Export] public uint TargetLayerMask { get; set; } = 4u; // Layer 3 (Enemies = 4)
 
     public Skill_MeleeCleave()
@@ -45,11 +45,11 @@ public partial class Skill_MeleeCleave : SkillBase
             forward = forward.LengthSquared() > 0.001f ? forward.Normalized() : Vector3.Forward;
         }
 
-        // Trigger cleave attack animation
+        // Trigger dynamic spinning whirlwind cleave animation at 2.2x speed (~0.7s total)
         var animator = caster.GetNodeOrNull<HeroAnimator>("HeroAnimator");
         if (animator != null)
         {
-            animator.PlayOneShot("Sword_Regular_B", 0.08);
+            animator.PlayOneShot("Sword_Regular_C", 0.05, 2.2f);
         }
 
         int hitCount = 0;
@@ -120,30 +120,29 @@ public partial class Skill_MeleeCleave : SkillBase
             }
         }
 
-        SpawnCleaveEffect(caster, casterPos, forward);
-        GD.Print($"[Skill_MeleeCleave] Cast Cleave! Enemies hit: {hitCount}");
+        SpawnCrescentSlashEffect(caster, casterPos, forward);
+        GD.Print($"[Skill_MeleeCleave] Cast Spin Cleave! Enemies hit: {hitCount}");
         return true;
     }
 
-    private void SpawnCleaveEffect(Node3D caster, Vector3 position, Vector3 forward)
+    private void SpawnCrescentSlashEffect(Node3D caster, Vector3 position, Vector3 forward)
     {
         var vfx = new Node3D();
-        vfx.Position = position + (Vector3.Up * 0.8f) + (forward * (Range * 0.4f));
+        // Position at chest/waist height where the sword swings
+        vfx.Position = position + (Vector3.Up * 0.9f);
+        float yaw = Mathf.Atan2(forward.X, forward.Z);
+        vfx.Rotation = new Vector3(Mathf.DegToRad(-5.0f), yaw, 0.0f);
 
         var slashMesh = new MeshInstance3D();
-        var cylinder = new CylinderMesh
-        {
-            TopRadius = Range * 0.8f,
-            BottomRadius = Range * 0.8f,
-            Height = 0.05f
-        };
-        slashMesh.Mesh = cylinder;
+        slashMesh.Mesh = CreateSlashArcMesh(radius: Range * 0.75f, width: 0.75f, arcDeg: ArcDegrees, segments: 24);
 
         var mat = new StandardMaterial3D
         {
             ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-            AlbedoColor = new Color(1.0f, 0.4f, 0.1f, 0.8f),
-            Transparency = BaseMaterial3D.TransparencyEnum.Alpha
+            BlendMode = BaseMaterial3D.BlendModeEnum.Add,
+            AlbedoColor = new Color(1.0f, 0.6f, 0.15f, 0.95f),
+            Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+            CullMode = BaseMaterial3D.CullModeEnum.Disabled
         };
         slashMesh.MaterialOverride = mat;
         vfx.AddChild(slashMesh);
@@ -152,8 +151,45 @@ public partial class Skill_MeleeCleave : SkillBase
 
         var tween = vfx.CreateTween();
         tween.SetParallel(true);
-        tween.TweenProperty(slashMesh, "scale", new Vector3(1.3f, 1.0f, 1.3f), 0.2f);
-        tween.TweenProperty(mat, "albedo_color:a", 0.0f, 0.2f);
+        tween.TweenProperty(slashMesh, "scale", new Vector3(1.3f, 1.0f, 1.3f), 0.3f);
+        tween.TweenProperty(mat, "albedo_color:a", 0.0f, 0.3f);
         tween.Chain().TweenCallback(Callable.From(() => vfx.QueueFree()));
+    }
+
+    private static ArrayMesh CreateSlashArcMesh(float radius, float width, float arcDeg, int segments)
+    {
+        var st = new SurfaceTool();
+        st.Begin(Mesh.PrimitiveType.Triangles);
+        float halfRad = Mathf.DegToRad(arcDeg * 0.5f);
+        float step = (halfRad * 2.0f) / segments;
+
+        for (int i = 0; i < segments; i++)
+        {
+            float a0 = -halfRad + (i * step);
+            float a1 = -halfRad + ((i + 1) * step);
+
+            // Forward in local space is (sin(a), 0, cos(a))
+            var dir0 = new Vector3(Mathf.Sin(a0), 0.0f, Mathf.Cos(a0));
+            var dir1 = new Vector3(Mathf.Sin(a1), 0.0f, Mathf.Cos(a1));
+
+            var out0 = dir0 * (radius + width * 0.5f);
+            var in0 = dir0 * (radius - width * 0.5f);
+            var out1 = dir1 * (radius + width * 0.5f);
+            var in1 = dir1 * (radius - width * 0.5f);
+
+            // Triangle 1
+            st.SetNormal(Vector3.Up);
+            st.AddVertex(out0);
+            st.AddVertex(in0);
+            st.AddVertex(out1);
+
+            // Triangle 2
+            st.SetNormal(Vector3.Up);
+            st.AddVertex(out1);
+            st.AddVertex(in0);
+            st.AddVertex(in1);
+        }
+
+        return st.Commit();
     }
 }
