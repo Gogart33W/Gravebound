@@ -7,14 +7,19 @@ public partial class WorldItem : Area3D
     [Signal]
     public delegate void ItemPickedUpEventHandler(ItemData item);
 
+    public static bool LabelsVisible { get; private set; } = true;
+
     [Export] public ItemData? Item { get; set; }
 
     private Node3D _visualContainer = null!;
-    private MeshInstance3D _defaultMesh = null!;
+    private Node3D _defaultMesh = null!;
     private Label3D _label = null!;
     private OmniLight3D? _glowLight;
-    private double _idleTime;
-    private float _baseVisualY;
+
+    public override void _EnterTree()
+    {
+        AddToGroup("WorldItems");
+    }
 
     public override void _Ready()
     {
@@ -30,13 +35,35 @@ public partial class WorldItem : Area3D
     private void EnsureNodes()
     {
         _visualContainer ??= GetNodeOrNull<Node3D>("VisualContainer")!;
-        _defaultMesh ??= GetNodeOrNull<MeshInstance3D>("VisualContainer/DefaultMesh")!;
+        _defaultMesh ??= GetNodeOrNull<Node3D>("VisualContainer/DefaultMesh")!;
         _label ??= GetNodeOrNull<Label3D>("Label3D")!;
         _glowLight ??= GetNodeOrNull<OmniLight3D>("GlowLight");
+    }
 
-        if (_visualContainer != null && _baseVisualY == 0.0f)
+    public static void ToggleLabels(SceneTree? tree = null)
+    {
+        tree ??= Engine.GetMainLoop() as SceneTree;
+        if (tree == null)
         {
-            _baseVisualY = _visualContainer.Position.Y;
+            return;
+        }
+
+        LabelsVisible = !LabelsVisible;
+        foreach (var node in tree.GetNodesInGroup("WorldItems"))
+        {
+            if (node is WorldItem worldItem)
+            {
+                worldItem.SetLabelVisible(LabelsVisible);
+            }
+        }
+        GD.Print($"[WorldItem] Loot labels: {(LabelsVisible ? "ON" : "OFF")}");
+    }
+
+    public void SetLabelVisible(bool visible)
+    {
+        if (_label != null)
+        {
+            _label.Visible = visible;
         }
     }
 
@@ -47,61 +74,56 @@ public partial class WorldItem : Area3D
 
         Color rarityColor = data.Rarity.GetColor();
 
-        // Update Billboard Label
+        // Update Billboard Label (Titan Quest style)
         if (_label != null)
         {
-            _label.Text = data.ItemName;
+            _label.Text = $"[ {data.ItemName} ]";
             _label.Modulate = rarityColor;
+            SetLabelVisible(LabelsVisible);
+
+            if (LabelsVisible)
+            {
+                _label.Scale = new Vector3(0.5f, 0.5f, 0.5f);
+                var labelTween = CreateTween();
+                labelTween.SetParallel(true);
+                labelTween.TweenProperty(_label, "scale", Vector3.One, 0.25f)
+                    .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+            }
         }
 
-        // Update Visual Mesh
+        // Update Visual Mesh (lying on the ground)
         if (_visualContainer != null)
         {
+            float randomYaw = (float)GD.RandRange(0.0f, Mathf.Tau);
+            _visualContainer.Rotation = new Vector3(0.0f, randomYaw, 0.0f);
+            _visualContainer.Position = Vector3.Zero;
+
             if (data.WorldVisual != null)
             {
-                _defaultMesh.Visible = false;
+                if (_defaultMesh != null)
+                {
+                    _defaultMesh.Visible = false;
+                }
                 var customVisual = data.WorldVisual.Instantiate<Node3D>();
                 _visualContainer.AddChild(customVisual);
             }
             else if (_defaultMesh != null)
             {
                 _defaultMesh.Visible = true;
-                var mat = new StandardMaterial3D
-                {
-                    AlbedoColor = rarityColor,
-                    EmissionEnabled = true,
-                    Emission = rarityColor * 0.4f,
-                    Roughness = 0.3f,
-                    Metallic = 0.5f
-                };
-                _defaultMesh.MaterialOverride = mat;
             }
         }
 
-        // Rarity glow light
+        // Soft ground illumination
         if (_glowLight != null)
         {
             _glowLight.LightColor = rarityColor;
             _glowLight.LightEnergy = data.Rarity switch
             {
-                ItemRarity.Unique => 1.8f,
-                ItemRarity.Rare => 1.2f,
-                ItemRarity.Magic => 0.8f,
-                _ => 0.4f
+                ItemRarity.Unique => 1.2f,
+                ItemRarity.Rare => 0.8f,
+                ItemRarity.Magic => 0.5f,
+                _ => 0.25f
             };
-        }
-    }
-
-    public override void _Process(double delta)
-    {
-        _idleTime += delta;
-
-        if (_visualContainer != null)
-        {
-            // Gentle floating rotation and bobbing
-            _visualContainer.RotateY((float)(1.5 * delta));
-            float bobOffset = Mathf.Sin((float)(_idleTime * 2.5)) * 0.05f;
-            _visualContainer.Position = new Vector3(_visualContainer.Position.X, _baseVisualY + bobOffset, _visualContainer.Position.Z);
         }
     }
 
@@ -117,11 +139,14 @@ public partial class WorldItem : Area3D
         EmitSignal(SignalName.ItemPickedUp, collectedItem);
         GD.Print($"[WorldItem] Picked up: [{collectedItem.Rarity}] {collectedItem.ItemName}");
 
-        // Small collection pop tween
+        // Collection pop tween
         var tween = CreateTween();
         tween.SetParallel(true);
         tween.TweenProperty(this, "scale", new Vector3(0.01f, 0.01f, 0.01f), 0.15f);
-        tween.TweenProperty(_label, "modulate:a", 0.0f, 0.15f);
+        if (_label != null)
+        {
+            tween.TweenProperty(_label, "modulate:a", 0.0f, 0.15f);
+        }
         tween.Chain().TweenCallback(Callable.From(QueueFree));
 
         return collectedItem;

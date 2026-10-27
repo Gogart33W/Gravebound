@@ -88,6 +88,10 @@ public partial class HeroController : CharacterBody3D, IDamageable
         {
             CastSkillW();
         }
+        else if (@event.IsActionPressed("toggle_loot") || IsKeyJustPressed(@event, Key.X))
+        {
+            WorldItem.ToggleLabels(GetTree());
+        }
     }
 
     private static bool IsKeyJustPressed(InputEvent @event, Key key)

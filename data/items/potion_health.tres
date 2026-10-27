@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/items/ItemData.cs" id="1_item_data"]
+[ext_resource type="PackedScene" path="res://scenes/items/visuals/VisualPotion.tscn" id="2_visual"]
 
 [resource]
 script = ExtResource("1_item_data")
@@ -8,6 +9,7 @@ Id = "potion_health"
 ItemName = "Lesser Health Draught"
 Rarity = 0
 Type = 5
+WorldVisual = ExtResource("2_visual")
 StatModifiers = {
 "heal_amount": 50.0
 }
