@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/actors/HeroController.cs" id="1_controller"]
 [ext_resource type="PackedScene" path="res://assets/models/hero/hero_character.glb" id="2_character_model"]
 [ext_resource type="Script" path="res://scripts/actors/HeroAnimator.cs" id="3_animator"]
 [ext_resource type="PackedScene" path="res://assets/models/hero/hero_animations.glb" id="4_animations"]
+[ext_resource type="PackedScene" path="res://assets/models/hero/hero_locomotion.fbx" id="5_locomotion"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_hero"]
 radius = 0.4
@@ -15,7 +16,7 @@ collision_mask = 1
 script = ExtResource("1_controller")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.88, 0)
 shape = SubResource("CapsuleShape3D_hero")
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
@@ -23,6 +24,7 @@ path_desired_distance = 0.6
 target_desired_distance = 0.6
 
 [node name="CharacterModel" parent="." instance=ExtResource("2_character_model")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
 
 [node name="Slot_MainHand" type="BoneAttachment3D" parent="."]
 bone_name = "hand_r"
@@ -45,5 +47,6 @@ root_node = NodePath("../CharacterModel")
 [node name="HeroAnimator" type="Node" parent="."]
 script = ExtResource("3_animator")
 IdleAnim = &"Idle_Shield"
-RunAnim = &"Walk_Carry"
+RunAnim = &"Jog_Fwd"
 AnimationSource = ExtResource("4_animations")
+LocomotionSource = ExtResource("5_locomotion")

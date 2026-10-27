@@ -5,9 +5,10 @@ namespace Gravebound.Actors;
 public partial class HeroAnimator : Node
 {
     [Export] public StringName IdleAnim { get; set; } = "Idle_Shield";
-    [Export] public StringName RunAnim { get; set; } = "Walk_Carry";
+    [Export] public StringName RunAnim { get; set; } = "Jog_Fwd";
     [Export] public float SpeedThreshold { get; set; } = 0.1f;
     [Export] public PackedScene? AnimationSource { get; set; }
+    [Export] public PackedScene? LocomotionSource { get; set; }
 
     private CharacterBody3D? _hero;
     private AnimationPlayer? _animPlayer;
@@ -19,61 +20,76 @@ public partial class HeroAnimator : Node
         _animPlayer = GetNodeOrNull<AnimationPlayer>("AnimationPlayer")
                    ?? GetParent()?.GetNodeOrNull<AnimationPlayer>("AnimationPlayer");
 
-        GD.Print($"[HeroAnimator] _Ready started. Hero={_hero?.Name}, AnimPlayer={_animPlayer?.Name}, AnimSource={AnimationSource?.ResourcePath}");
-
-        // Copy animations from the source library glb into the player
-        if (AnimationSource != null && _animPlayer != null)
+        if (_animPlayer != null)
         {
-            var animInst = AnimationSource.Instantiate();
-            var sourcePlayer = animInst.GetNodeOrNull<AnimationPlayer>("AnimationPlayer");
-            if (sourcePlayer != null)
+            if (AnimationSource != null)
             {
-                foreach (StringName libName in sourcePlayer.GetAnimationLibraryList())
-                {
-                    var sourceLib = sourcePlayer.GetAnimationLibrary(libName);
-                    AnimationLibrary targetLib;
-                    if (_animPlayer.HasAnimationLibrary(libName))
-                    {
-                        targetLib = _animPlayer.GetAnimationLibrary(libName);
-                    }
-                    else
-                    {
-                        targetLib = new AnimationLibrary();
-                        _animPlayer.AddAnimationLibrary(libName, targetLib);
-                    }
-
-                    int count = 0;
-                    foreach (StringName animName in sourceLib.GetAnimationList())
-                    {
-                        var anim = (Animation)sourceLib.GetAnimation(animName).Duplicate();
-                        string nameLower = animName.ToString().ToLowerInvariant();
-                        if (nameLower.Contains("idle") || nameLower.Contains("walk") || nameLower.Contains("run"))
-                        {
-                            anim.LoopMode = Animation.LoopModeEnum.Linear;
-                        }
-
-                        if (targetLib.HasAnimation(animName))
-                        {
-                            targetLib.RemoveAnimation(animName);
-                        }
-                        targetLib.AddAnimation(animName, anim);
-                        count++;
-                    }
-                    GD.Print($"[HeroAnimator] Copied {count} animations from library '{libName}'. Total in player: {_animPlayer.GetAnimationList().Length}");
-                }
+                CopyAnimationsFromSource(AnimationSource);
             }
-            else
+
+            if (LocomotionSource != null)
             {
-                GD.PrintErr("[HeroAnimator] Source AnimationPlayer not found in AnimationSource!");
+                CopyAnimationsFromSource(LocomotionSource);
             }
-            animInst.QueueFree();
-        }
-        else
-        {
-            GD.PrintErr($"[HeroAnimator] Missing reference: AnimSource={AnimationSource != null}, AnimPlayer={_animPlayer != null}");
         }
 
         PlayAnimation(IdleAnim);
+    }
+
+    private void CopyAnimationsFromSource(PackedScene sourceScene)
+    {
+        if (_animPlayer == null) return;
+
+        var animInst = sourceScene.Instantiate();
+        var sourcePlayer = animInst.GetNodeOrNull<AnimationPlayer>("AnimationPlayer");
+        if (sourcePlayer != null)
+        {
+            foreach (StringName libName in sourcePlayer.GetAnimationLibraryList())
+            {
+                var sourceLib = sourcePlayer.GetAnimationLibrary(libName);
+                AnimationLibrary targetLib;
+                if (_animPlayer.HasAnimationLibrary(libName))
+                {
+                    targetLib = _animPlayer.GetAnimationLibrary(libName);
+                }
+                else
+                {
+                    targetLib = new AnimationLibrary();
+                    _animPlayer.AddAnimationLibrary(libName, targetLib);
+                }
+
+                foreach (StringName animName in sourceLib.GetAnimationList())
+                {
+                    var anim = (Animation)sourceLib.GetAnimation(animName).Duplicate();
+                    string rawName = animName.ToString();
+                    string cleanName = rawName.StartsWith("Rig|") ? rawName.Substring(4) : rawName;
+                    StringName targetAnimName = new StringName(cleanName);
+
+                    // Retarget tracks if source uses Rig/ instead of Armature/
+                    for (int t = 0; t < anim.GetTrackCount(); t++)
+                    {
+                        string trackPath = anim.TrackGetPath(t).ToString();
+                        if (trackPath.StartsWith("Rig/"))
+                        {
+                            anim.TrackSetPath(t, new NodePath("Armature/" + trackPath.Substring(4)));
+                        }
+                    }
+
+                    string nameLower = cleanName.ToLowerInvariant();
+                    if (nameLower.Contains("idle") || nameLower.Contains("walk") || nameLower.Contains("run") || nameLower.Contains("jog"))
+                    {
+                        anim.LoopMode = Animation.LoopModeEnum.Linear;
+                    }
+
+                    if (targetLib.HasAnimation(targetAnimName))
+                    {
+                        targetLib.RemoveAnimation(targetAnimName);
+                    }
+                    targetLib.AddAnimation(targetAnimName, anim);
+                }
+            }
+        }
+        animInst.QueueFree();
     }
 
     public override void _Process(double delta)
