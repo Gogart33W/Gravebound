@@ -8,6 +8,7 @@ public partial class HealthComponent : Node
     [Signal] public delegate void DiedEventHandler();
 
     [Export] public float MaxHealth { get; set; } = 100.0f;
+    [Export] public bool IsInvulnerable { get; set; }
 
     public float CurrentHealth { get; private set; }
     public bool IsDead => CurrentHealth <= 0.0f;
@@ -19,7 +20,7 @@ public partial class HealthComponent : Node
 
     public void TakeDamage(float amount)
     {
-        if (IsDead || amount <= 0.0f)
+        if (IsDead || IsInvulnerable || amount <= 0.0f)
         {
             return;
         }

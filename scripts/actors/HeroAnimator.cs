@@ -16,6 +16,8 @@ public partial class HeroAnimator : Node
     private StringName _currentAnim = "";
     private bool _isPlayingOneShot;
 
+    public bool IsPlayingOneShot => _isPlayingOneShot;
+
     public override void _Ready()
     {
         _hero = GetParent<CharacterBody3D>();
@@ -54,7 +56,7 @@ public partial class HeroAnimator : Node
         PlayOneShot(AttackAnim, 0.08);
     }
 
-    public void PlayOneShot(StringName animName, double blendTime = 0.08)
+    public void PlayOneShot(StringName animName, double blendTime = 0.08, float speed = 1.0f)
     {
         if (_animPlayer == null || string.IsNullOrEmpty(animName))
         {
@@ -69,7 +71,7 @@ public partial class HeroAnimator : Node
             {
                 _animPlayer.Seek(0, true);
             }
-            _animPlayer.Play(animName, customBlend: blendTime);
+            _animPlayer.Play(animName, customBlend: blendTime, customSpeed: speed);
         }
         else
         {
@@ -88,7 +90,7 @@ public partial class HeroAnimator : Node
 
     public override void _Process(double delta)
     {
-        if (_hero == null || _animPlayer == null)
+        if (_hero == null || _animPlayer == null || _isPlayingOneShot)
         {
             return;
         }
@@ -98,11 +100,9 @@ public partial class HeroAnimator : Node
 
         if (speed >= SpeedThreshold)
         {
-            // Moving cancels one-shot animation smoothly
-            _isPlayingOneShot = false;
             PlayAnimation(RunAnim, 0.12);
         }
-        else if (!_isPlayingOneShot)
+        else
         {
             PlayAnimation(IdleAnim, 0.15);
         }
