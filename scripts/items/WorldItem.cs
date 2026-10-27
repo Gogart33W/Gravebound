@@ -13,6 +13,7 @@ public partial class WorldItem : Area3D
 
     private Node3D _visualContainer = null!;
     private Node3D _defaultMesh = null!;
+    private MeshInstance3D? _plateMesh;
     private Label3D _label = null!;
     private OmniLight3D? _glowLight;
 
@@ -36,6 +37,7 @@ public partial class WorldItem : Area3D
     {
         _visualContainer ??= GetNodeOrNull<Node3D>("VisualContainer")!;
         _defaultMesh ??= GetNodeOrNull<Node3D>("VisualContainer/DefaultMesh")!;
+        _plateMesh ??= GetNodeOrNull<MeshInstance3D>("PlateMesh");
         _label ??= GetNodeOrNull<Label3D>("Label3D")!;
         _glowLight ??= GetNodeOrNull<OmniLight3D>("GlowLight");
     }
@@ -65,6 +67,10 @@ public partial class WorldItem : Area3D
         {
             _label.Visible = visible;
         }
+        if (_plateMesh != null)
+        {
+            _plateMesh.Visible = visible;
+        }
     }
 
     public void Initialize(ItemData data)
@@ -74,20 +80,51 @@ public partial class WorldItem : Area3D
 
         Color rarityColor = data.Rarity.GetColor();
 
-        // Update Billboard Label (Titan Quest style)
+        // Titan Quest style clean uppercase text
+        string displayName = data.ItemName.ToUpperInvariant();
+
         if (_label != null)
         {
-            _label.Text = $"[ {data.ItemName} ]";
+            _label.Text = displayName;
             _label.Modulate = rarityColor;
             SetLabelVisible(LabelsVisible);
 
+            // Size background plate to fit text with clean padding
+            var font = _label.Font ?? ThemeDB.FallbackFont;
+            Vector2 textSize = font.GetStringSize(displayName, HorizontalAlignment.Center, -1, _label.FontSize);
+            float width = (textSize.X * _label.PixelSize) + 0.14f;
+            float height = Mathf.Max((textSize.Y * _label.PixelSize) + 0.05f, 0.16f);
+
+            if (_plateMesh != null)
+            {
+                var mat = _plateMesh.GetActiveMaterial(0);
+                _plateMesh.Mesh = new QuadMesh { Size = new Vector2(width, height), Material = mat };
+            }
+
+            // Expand collision box to match plate width for easy clicking
+            var colShape = GetNodeOrNull<CollisionShape3D>("CollisionShape3D");
+            if (colShape?.Shape is BoxShape3D box)
+            {
+                box.Size = new Vector3(Mathf.Max(width, 0.9f), box.Size.Y, box.Size.Z);
+            }
+
             if (LabelsVisible)
             {
-                _label.Scale = new Vector3(0.5f, 0.5f, 0.5f);
+                _label.Scale = new Vector3(0.6f, 0.6f, 0.6f);
+                if (_plateMesh != null)
+                {
+                    _plateMesh.Scale = new Vector3(0.6f, 0.6f, 0.6f);
+                }
+
                 var labelTween = CreateTween();
                 labelTween.SetParallel(true);
-                labelTween.TweenProperty(_label, "scale", Vector3.One, 0.25f)
+                labelTween.TweenProperty(_label, "scale", Vector3.One, 0.22f)
                     .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+                if (_plateMesh != null)
+                {
+                    labelTween.TweenProperty(_plateMesh, "scale", Vector3.One, 0.22f)
+                        .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+                }
             }
         }
 
@@ -146,6 +183,10 @@ public partial class WorldItem : Area3D
         if (_label != null)
         {
             tween.TweenProperty(_label, "modulate:a", 0.0f, 0.15f);
+        }
+        if (_plateMesh != null)
+        {
+            tween.TweenProperty(_plateMesh, "scale", new Vector3(0.01f, 0.01f, 0.01f), 0.15f);
         }
         tween.Chain().TweenCallback(Callable.From(QueueFree));
 

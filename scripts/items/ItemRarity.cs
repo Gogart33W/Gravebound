@@ -16,10 +16,10 @@ public static class ItemRarityExtensions
     {
         return rarity switch
         {
-            ItemRarity.Common => new Color(0.9f, 0.9f, 0.9f),
-            ItemRarity.Magic => new Color(0.3f, 0.6f, 1.0f),
-            ItemRarity.Rare => new Color(1.0f, 0.85f, 0.2f),
-            ItemRarity.Unique => new Color(1.0f, 0.5f, 0.1f),
+            ItemRarity.Common => new Color(0.85f, 0.85f, 0.85f),
+            ItemRarity.Magic => new Color(0.35f, 0.65f, 1.0f),
+            ItemRarity.Rare => new Color(0.98f, 0.78f, 0.18f),
+            ItemRarity.Unique => new Color(0.98f, 0.45f, 0.12f),
             _ => Colors.White
         };
     }
